@@ -20,13 +20,12 @@ class FileOperations:
     def get_json(self):
         print "Loading json..."
         self.jsons = []
-        self.reviews = []
         lines = self.text.split('\n');
         for line in lines:
             try:
                 curr = json.loads(line)
+                curr[0] = filter(str.isalpha, curr[0])
                 self.jsons.append(curr)
-                self.reviews.append(curr['reviewText'] + '. ' + curr['summary'])
             except:
                 pass
 
@@ -44,6 +43,18 @@ class FileOperations:
                 sentences.append(text.text)
         return sentences
     
+    def write_to_file(self, vec, file_name):
+        cur = 0
+        f = open(file_name, 'a')
+        for line in vec:
+            cur += 1
+            print cur, cur * 100 / len(sentences), '%'
+            res = json.dumps(line);
+            f.write(res)
+            f.write('\n')
+        f.close
+
+
     def get_taged_data(self):
         self.tags = []
         lines = self.text.split('\n')
@@ -56,6 +67,10 @@ class FileOperations:
     def normalize(self):
         print "Normalizing..."
         self.text = self.text.lower()
+
+    def remove_chars(self):
+        print 'Removing...'
+        
 
     def tokenize(self, raw):
         stemmer = PorterStemmer()

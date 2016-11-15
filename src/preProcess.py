@@ -24,5 +24,14 @@ def tag_text():
         json_tag = json.dumps(res)
         f.write(json_tag)
         f.write('\n')
+    f.close()
 
-tag_text()
+def remove_chars():
+    file_name = "../taged-data/taged-laptops-trial.json"
+
+    fo = FileOperations(file_name)
+    jsons = fo.get_json()
+    fo.write_to_file(json, '../taged-data/test.json')
+
+#tag_text()
+remove_chars()
