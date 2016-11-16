@@ -2,6 +2,8 @@ from FileOperations import FileOperations
 import os
 from nltk.tag.stanford import StanfordPOSTagger
 import json
+from os import listdir
+from os.path import isfile, join
 
 def tag_text():
     file_name = "./data/Restaurants_Train.xml"
@@ -27,11 +29,13 @@ def tag_text():
     f.close()
 
 def remove_chars():
-    file_name = "../taged-data/taged-laptops-trial.json"
-
-    fo = FileOperations(file_name)
-    jsons = fo.get_json()
-    fo.write_to_file(json, '../taged-data/test.json')
+    path = '../taged-data/'
+    onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
+    for file_name in onlyfiles:
+        fo = FileOperations(path + file_name)
+        jsons = fo.get_json()
+        #print jsons
+        fo.write_to_file(jsons, path + file_name + ".pure")
 
 #tag_text()
 remove_chars()

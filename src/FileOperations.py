@@ -1,5 +1,6 @@
 import json
 import nltk
+import re
 import xml.etree.ElementTree
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors.nearest_centroid import NearestCentroid
@@ -24,7 +25,8 @@ class FileOperations:
         for line in lines:
             try:
                 curr = json.loads(line)
-                curr[0] = filter(str.isalpha, curr[0])
+                for i in range(len(curr)):
+                    curr[i][0] = re.sub('[^a-zA-Z]+', '', curr[i][0])
                 self.jsons.append(curr)
             except:
                 pass
@@ -45,10 +47,13 @@ class FileOperations:
     
     def write_to_file(self, vec, file_name):
         cur = 0
+        pre = 0
         f = open(file_name, 'a')
         for line in vec:
             cur += 1
-            print cur, cur * 100 / len(sentences), '%'
+            if(cur != pre):
+                print cur * 100 / len(vec), '%'
+                pre = cur
             res = json.dumps(line);
             f.write(res)
             f.write('\n')
