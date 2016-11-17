@@ -38,6 +38,10 @@ class FileOperations:
         self.xml_root = xml.etree.ElementTree.parse(self.file_name).getroot()
         return self.xml_root
 
+    
+    '''
+        Edit this function to extract the aspects and polarity, and all the information
+    '''
     def get_sentences(self):
         sentences = []
         for sentence in self.xml_root:
