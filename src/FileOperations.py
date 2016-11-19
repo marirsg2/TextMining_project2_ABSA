@@ -1,21 +1,26 @@
 import json
-import nltk
 import re
 import xml.etree.ElementTree
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.neighbors.nearest_centroid import NearestCentroid
-import scipy
-from nltk.tokenize import RegexpTokenizer
+
+import nltk
 from nltk.corpus import stopwords
 from nltk.stem.porter import *
+from nltk.tokenize import RegexpTokenizer
+import scipy
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.neighbors.nearest_centroid import NearestCentroid
+
 import numpy as np
+import xmldict
+
 
 class FileOperations:
     def __init__(self, file_name):
         self.file_name = file_name
         f = open(file_name, 'r')
         self.text = f.read()
+        f.close()
 
     #read the json file
     def get_json(self):
@@ -48,7 +53,17 @@ class FileOperations:
             for text in sentence.findall('text'):
                 sentences.append(text.text)
         return sentences
-    
+#------------------------------------------------------------------------------ 
+    def convertXmlToDict(self):
+        '''
+        '''
+        ret_xmlDict = {}
+        with open(self.file_name, 'r') as content_file:
+            content = content_file.read()
+            ret_xmlDict = xmldict.xml_to_dict(content)
+        return ret_xmlDict
+            
+#------------------------------------------------------------------------------ 
     def write_to_file(self, vec, file_name):
         cur = 0
         pre = 0
