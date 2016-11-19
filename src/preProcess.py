@@ -21,7 +21,7 @@ def tag_text():
 
     for line in sentences:
         cur += 1
-        print cur, cur * 100 / len(sentences), '%'
+        print (cur, cur * 100 / len(sentences), '%')
         res = st.tag(line.split())
         json_tag = json.dumps(res)
         f.write(json_tag)

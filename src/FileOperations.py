@@ -19,7 +19,7 @@ class FileOperations:
 
     #read the json file
     def get_json(self):
-        print "Loading json..."
+        print ("Loading json...")
         self.jsons = []
         lines = self.text.split('\n');
         for line in lines:
@@ -56,7 +56,7 @@ class FileOperations:
         for line in vec:
             cur += 1
             if(cur != pre):
-                print cur * 100 / len(vec), '%'
+                print (cur * 100 / len(vec), '%')
                 pre = cur
             res = json.dumps(line);
             f.write(res)
@@ -74,11 +74,11 @@ class FileOperations:
         return self.tags
 
     def normalize(self):
-        print "Normalizing..."
+        print ("Normalizing...")
         self.text = self.text.lower()
 
     def remove_chars(self):
-        print 'Removing...'
+        print ('Removing...')
         
 
     def tokenize(self, raw):
@@ -89,10 +89,10 @@ class FileOperations:
         return stems
 
     def get_tfidf(self):
-        print "Getting TF-IDF..."
+        print ("Getting TF-IDF...")
         tfidf = TfidfVectorizer(tokenizer=self.tokenize, stop_words='english')
         tfs = tfidf.fit_transform(self.reviews)
-        print tfs.shape
+        print (tfs.shape)
         return tfs
 
     def get_value(self):
@@ -105,13 +105,13 @@ class FileOperations:
         return y
 
     def train_bayes_model(self, X, y):
-        print "Training Bayes model..."
+        print ("Training Bayes model...")
         clf = MultinomialNB()
         clf.fit(X,y)
         return clf
 
     def score(self, clf, X, y):
-        print "Predicting..."
+        print ("Predicting...")
         res = clf.predict(X)
         TP = 0
         FP = 0
@@ -129,7 +129,7 @@ class FileOperations:
         return TP, FP, FN, TN
 
     def train_rocchio_model(self, X, y):
-        print "Training Rocchio model..."
+        print ("Training Rocchio model...")
         clf = NearestCentroid()
         clf.fit(X,y)
         return clf
