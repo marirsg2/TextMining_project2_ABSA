@@ -1,25 +1,30 @@
 import json
-import nltk
 import re
 import xml.etree.ElementTree
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.neighbors.nearest_centroid import NearestCentroid
-import scipy
-from nltk.tokenize import RegexpTokenizer
+
+import nltk
 from nltk.corpus import stopwords
 from nltk.stem.porter import *
+from nltk.tokenize import RegexpTokenizer
+import scipy
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.neighbors.nearest_centroid import NearestCentroid
+
 import numpy as np
+import xmldict
+
 
 class FileOperations:
     def __init__(self, file_name):
         self.file_name = file_name
         f = open(file_name, 'r')
         self.text = f.read()
+        f.close()
 
     #read the json file
     def get_json(self):
-        print "Loading json..."
+        print ("Loading json...")
         self.jsons = []
         lines = self.text.split('\n');
         for line in lines:
@@ -38,13 +43,27 @@ class FileOperations:
         self.xml_root = xml.etree.ElementTree.parse(self.file_name).getroot()
         return self.xml_root
 
+    
+    '''
+        Edit this function to extract the aspects and polarity, and all the information
+    '''
     def get_sentences(self):
         sentences = []
         for sentence in self.xml_root:
             for text in sentence.findall('text'):
                 sentences.append(text.text)
         return sentences
-    
+#------------------------------------------------------------------------------ 
+    def convertXmlToDict(self):
+        '''
+        '''
+        ret_xmlDict = {}
+        with open(self.file_name, 'r') as content_file:
+            content = content_file.read()
+            ret_xmlDict = xmldict.xml_to_dict(content)
+        return ret_xmlDict
+            
+#------------------------------------------------------------------------------ 
     def write_to_file(self, vec, file_name):
         cur = 0
         pre = 0
@@ -52,7 +71,7 @@ class FileOperations:
         for line in vec:
             cur += 1
             if(cur != pre):
-                print cur * 100 / len(vec), '%'
+                print (cur * 100 / len(vec), '%')
                 pre = cur
             res = json.dumps(line);
             f.write(res)
@@ -70,11 +89,11 @@ class FileOperations:
         return self.tags
 
     def normalize(self):
-        print "Normalizing..."
+        print ("Normalizing...")
         self.text = self.text.lower()
 
     def remove_chars(self):
-        print 'Removing...'
+        print ('Removing...')
         
 
     def tokenize(self, raw):
@@ -85,10 +104,10 @@ class FileOperations:
         return stems
 
     def get_tfidf(self):
-        print "Getting TF-IDF..."
+        print ("Getting TF-IDF...")
         tfidf = TfidfVectorizer(tokenizer=self.tokenize, stop_words='english')
         tfs = tfidf.fit_transform(self.reviews)
-        print tfs.shape
+        print (tfs.shape)
         return tfs
 
     def get_value(self):
@@ -101,13 +120,13 @@ class FileOperations:
         return y
 
     def train_bayes_model(self, X, y):
-        print "Training Bayes model..."
+        print ("Training Bayes model...")
         clf = MultinomialNB()
         clf.fit(X,y)
         return clf
 
     def score(self, clf, X, y):
-        print "Predicting..."
+        print ("Predicting...")
         res = clf.predict(X)
         TP = 0
         FP = 0
@@ -125,7 +144,7 @@ class FileOperations:
         return TP, FP, FN, TN
 
     def train_rocchio_model(self, X, y):
-        print "Training Rocchio model..."
+        print ("Training Rocchio model...")
         clf = NearestCentroid()
         clf.fit(X,y)
         return clf

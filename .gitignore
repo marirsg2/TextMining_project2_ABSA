@@ -88,3 +88,7 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# get rid off model file and data file
+stanford_postagger/*
+taged-data/*
