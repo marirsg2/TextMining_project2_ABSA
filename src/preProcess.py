@@ -11,15 +11,18 @@ tagedDataPath = '../taged-data/'
 pickleFolder = '../PickledData/'
 pickleFile = 'preProcessedData.p'
 
-def getReviewDictWithTagging():
-    file_name = "../data/Restaurants_Train.xml"
+def getReviewDictsWithTagging():
+    file_names = ["../data/Restaurants_Train.xml","../data/restaurants-trial.xml","../data/Laptops_Train.xml",
+                  "../data/laptops-trial.xml"]
 
     os.environ['CLASSPATH']="../stanford_postagger/stanford-postagger.jar"
     os.environ['STANFORD_MODELS']='../stanford_postagger/models/english-left3words-distsim.tagger'
     os.environ['JAVAHOME']= "C:\\Program Files\\Java\jre1.8.0_71\\bin"    
 
     st = StanfordPOSTagger('english-bidirectional-distsim.tagger')
-    fo = FileOperations(file_name)
+    listOfDicts = []
+    for file_name in file_names:
+        fo = FileOperations(file_name)
 #     fo.get_xml()
 #     sentences = fo.get_sentences()
 
@@ -35,15 +38,18 @@ def getReviewDictWithTagging():
 #     f.close()
     
     #this is a much easier way to convert an xml file directly to a dictionary in python to access data.
-    reviewsDict = fo.convertXmlToDict()
-    allReviews = reviewsDict['sentences']['sentence']
-    allTexts = [x['text'].split() for x in allReviews]
-    allTaggedTexts = st.tag_sents(allTexts)
-    #now put the tagged texts back in the dictionary in the same order
-    for idx in range (0, len(allReviews)):
-        allReviews[idx]['POStaggedText'] = allTaggedTexts[idx]
-    return reviewsDict
-
+        reviewsDict = fo.convertXmlToDict()
+        allReviews = reviewsDict['sentences']['sentence']
+        allTexts = [x['text'].split() for x in allReviews]
+        allTaggedTexts = st.tag_sents(allTexts)
+        #now put the tagged texts back in the dictionary in the same order
+        for idx in range (0, len(allReviews)):
+            allReviews[idx]['POStaggedText'] = allTaggedTexts[idx]
+        listOfDicts.append(reviewsDict)
+    return listOfDicts
+#===============================================================================
+# 
+#===============================================================================
 
 def remove_chars():
     path = tagedDataPath 
@@ -53,12 +59,13 @@ def remove_chars():
         jsons = fo.get_json()
         #print jsons
         fo.write_to_file(jsons, path + file_name + ".pure")
+#=======================================================================
+# 
+#=======================================================================
 
-shutil.rmtree(tagedDataPath)
-os.makedirs(tagedDataPath)
+if __name__ == "__main__":
+    [restaurantTrain,restaurantTrial,laptopTrain,laptopTrial] = getReviewDictsWithTagging()
+    UtilityFunctions.pickleListOfObjects(pickleFolder, pickleFile, 
+                                         [restaurantTrain,restaurantTrial,laptopTrain,laptopTrial])
 
-taggedDict = getReviewDictWithTagging()
-UtilityFunctions.pickleListOfObjects(pickleFolder, pickleFile, [taggedDict])
-
-
-#remove_chars()
+    #remove_chars()
