@@ -24,6 +24,10 @@ with open(pickleFolder+pickleFile,'rb') as pickleSource:
 print ("all data loaded in python dicts")
 #at this point you have all your training and test data in python dictionaries. Run algorithms
 
+#comment out this code , or put other code before this to make yours run first and faster.
+#===============================================================================
+#                USING LEXICAL DEFINITION TO FIND ASPECTS 
+#===============================================================================
 #code to use nltk and wordnet lexical dictionary to identify the aspects from the reviews
 allRestaurantData = copy.deepcopy(restaurantTrainDict)
 allRestaurantData.update(restaurantTestDict)
