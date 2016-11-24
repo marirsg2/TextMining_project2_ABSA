@@ -3,3 +3,5 @@
 1) NLTK and wordnet did not work as the definitions of laptop and restaurant was inadequate. There were no hyper and
 hyponyms, or meronyms and holonyms for the categories. So it was impossible to evaluate associations with the words
 in the reviews.
+
+  REference the paper and say it was suggested, but very noisy in the number of bad nouns that you get from the many definitions

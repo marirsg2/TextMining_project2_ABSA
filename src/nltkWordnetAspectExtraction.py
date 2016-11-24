@@ -46,3 +46,35 @@ def nltkWordnetAspectExtraction(listOfReviewDataDicts, listOfCategories):
 Pertainyms
 Adjectives that are derived from Nouns. eg: Criminal -> Crime
         '''
+#===============================================================================
+# 
+#===============================================================================
+
+if __name__ == "__main__":
+    a = wn.synsets('food')
+    print(a)
+    for piece in a[:1]:
+        print ("=================================================")
+        print (piece.definition())
+        print (piece.hypernyms())
+        print (piece.hyponyms())        
+        print (piece.topic_domains())
+        
+    
+    
+    '''
+    antonyms
+hypernyms, instance_hypernyms
+hyponyms, instance_hyponyms
+member_holonyms, substance_holonyms, part_holonyms
+member_meronyms, substance_meronyms, part_meronyms
+topic_domains, region_domains, usage_domains
+attributes
+derivationally_related_forms
+entailments
+causes
+also_sees
+verb_groups
+similar_tos
+pertainyms
+    '''
