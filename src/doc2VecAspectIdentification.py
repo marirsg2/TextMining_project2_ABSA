@@ -52,7 +52,7 @@ def getTaggedDocumentsWithNounsOnly (list_categoryAndReviewsTuple):
         for singlePOStaggedReview in list_allReviewsInCategoryAsPOStext:
             filteredSentence = []
             for singleTag in singlePOStaggedReview:
-                if singleTag[1] in ["NN", "NNS", "JJ", "JJS"]:
+                if singleTag[1] in ["NN", "NNS"] and singleTag[1] not in ["laptop","restaurant"]:#, "JJ", "JJS"]:
                     filteredSentence.append(singleTag[0])
             list_filteredPOSreviews.append(filteredSentence)            
         for filteredPOSreview in list_filteredPOSreviews:
@@ -91,9 +91,12 @@ def getListOfAspects(dictOfReviewsByCategory):
         list_taggedDocuments.remove(selection) 
     
     #hierarchical sampling is turned off (hs = 0)
-    d2vModel = Doc2Vec(documents=randomizedData, size = 200 , alpha= 0.1, window = 10, min_count= 2, workers=6, hs=0, iter =1000)
+    d2vModel = Doc2Vec(documents=randomizedData, size = 200 , alpha= 0.03,
+                        window = 3, min_count= 2, workers=6, hs=0, iter =1000)
+    print("For laptop")
     print (d2vModel.most_similar("laptop", topn=20))
     print("=========================================")
+    print("For restaurant")
     print (d2vModel.most_similar("restaurant", topn=20))
     print (len(d2vModel.vocab))
     
