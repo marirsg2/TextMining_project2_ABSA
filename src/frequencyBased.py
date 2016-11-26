@@ -50,7 +50,8 @@ def remove_low_freq(aspects, rate, data_size):
         del aspects[word]
 
 
-def get_vocabulary(low_freq=True, mutual_asp_rm=False, remove_top=1):
+def get_vocabulary(low_freq=True, mutual_asp_rm=False,
+                   low_freq_rate = 0.01, remove_top=1):
     """
     get aspects vocabulary restaurant and laptop
     """
@@ -59,8 +60,8 @@ def get_vocabulary(low_freq=True, mutual_asp_rm=False, remove_top=1):
     rst_apsects_v = get_poss_aspects(restaurant_sentences)
     # remove low frequent words
     if low_freq:
-        remove_low_freq(lptp_aspects_v, 0.01, len(laptop_sentences))
-        remove_low_freq(rst_apsects_v, 0.01, len(restaurant_sentences))
+        remove_low_freq(lptp_aspects_v, low_freq_rate, len(laptop_sentences))
+        remove_low_freq(rst_apsects_v, low_freq_rate, len(restaurant_sentences))
 
     # remove mutual aspects
     if mutual_asp_rm:
@@ -94,7 +95,7 @@ def remove_top_freq(aspects, remove_n):
 
 def main():
     """main for text"""
-    rst_asp_v, lptp_asp_v = get_vocabulary(remove_top=2)
+    rst_asp_v, lptp_asp_v = get_vocabulary(low_freq_rate = 0.005, remove_top=2)
     print(rst_asp_v)
     print('='*10)
     print(lptp_asp_v)
