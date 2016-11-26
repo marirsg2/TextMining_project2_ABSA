@@ -92,7 +92,6 @@ def remove_top_freq(aspects, remove_n):
         del aspects[w]
 
 
-
 def main():
     """main for text"""
     rst_asp_v, lptp_asp_v = get_vocabulary(remove_top=2)
