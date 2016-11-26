@@ -15,16 +15,16 @@ TFIDF instead of frequency method
 
 ================================WORK For Ram==============================================
 
-0) loading raw data into another file.
+0) Do the normalization of text before dependency parsing, this will only do the bare minimum, i.e. removing the
+" , ! ? ( ) "
 
-TO DO
-1) NLTK collocations from all the reviews in both categories.Then filter by occurrence (remove if less than 3 times)
-http://www.nltk.org/howto/collocations.html
+1)  use Doc 2 Vec for category identification. 
 
-2)  use Doc 2 Vec for category identification. Train on labelled reviews with the category being laptop or restaurant.
-		The idea is common nouns will not be strongly linked to either category (they are quite different),
-		BUT the nouns that are strongly related/unique to one category will have a high similarity.
-		typically you need the synset of the word to be accurate. Collocations will help better.
+2) preprocess with dependency parsing
+
+a) Need to only keep nouns and adjectives. Maybe only nouns !!
+  Test getTaggedDocumentsWithNounsOnly
+b) Need another two corpus
 
 -------DONE WORK
 

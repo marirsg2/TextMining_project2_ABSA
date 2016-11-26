@@ -9,6 +9,7 @@ import copy
 from preProcess import pickleFile, pickleFolder
 import nltkWordnetAspectExtraction as lexicalApproach
 import FileOperations
+import doc2VecAspectIdentification as d2v
 
 
 
@@ -17,6 +18,14 @@ import FileOperations
 #at this point you have all your training and test data in python dictionaries. Run algorithms
 
 
+#===============================================================================
+#   Using doc 2 vector to get a list of aspects
+#===============================================================================
+allRestaurantData = copy.deepcopy(restaurantTrainDict)
+allRestaurantData.update(restaurantTestDict)
+allLaptopData = copy.deepcopy(laptopTrainDict)
+allLaptopData.update(laptopTestDict)
+list_doc2vecExtractedAspects = d2v.getListOfAspects({'laptop':allLaptopData , 'restaurant' : allRestaurantData}) 
 
 
 #===============================================================================
