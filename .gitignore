@@ -92,3 +92,4 @@ ENV/
 # get rid off model file and data file
 stanford_postagger/*
 taged-data/*
+stanford-parser-full-2015-12-09/*
