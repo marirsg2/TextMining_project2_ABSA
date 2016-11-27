@@ -20,11 +20,11 @@ def get_compound(text, _parser):
     for g in depg:
         g = list(g)
         for node in g[0].nodes:
-            node = g[0].nodes[node]
-            for dep in node['deps']:
+            nodeDict = g[0].nodes[node]
+            for dep in nodeDict['deps']:
                 if dep == 'compound':
                     print('-'*15)
-                    print(node)
+                    print(nodeDict)
 
 
 def main():
