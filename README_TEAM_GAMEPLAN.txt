@@ -15,10 +15,8 @@ TFIDF instead of frequency method
 
 ================================WORK For Ram==============================================
 
-0) Do the normalization of text before dependency parsing, this will only do the bare minimum, i.e. removing the
-" , ! ? ( ) "
 
-1)  use Doc 2 Vec for category identification. 
+1)  Doc 2 Vec , get another 2 text sets with a different label, and hardcode it into the py file 
 
 2) preprocess with dependency parsing
 

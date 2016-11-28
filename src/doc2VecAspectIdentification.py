@@ -10,8 +10,6 @@ import gensim
 from gensim.models import Doc2Vec 
 from gensim.models.doc2vec import TaggedDocument
 
-
-
 assert gensim.models.doc2vec.FAST_VERSION > -1, "this will be painfully slow otherwise"
 
 
@@ -92,7 +90,7 @@ def getListOfAspects(dictOfReviewsByCategory):
     
     #hierarchical sampling is turned off (hs = 0)
     d2vModel = Doc2Vec(documents=randomizedData, size = 200 , alpha= 0.03,
-                        window = 3, min_count= 2, workers=6, hs=0, iter =1000)
+                        window = 3, min_count= 2, workers=4, hs=0, iter =1000)
     print("For laptop")
     print (d2vModel.most_similar("laptop", topn=20))
     print("=========================================")
