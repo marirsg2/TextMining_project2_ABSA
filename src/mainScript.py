@@ -11,6 +11,8 @@ import nltkWordnetAspectExtraction as lexicalApproach
 import FileOperations
 import doc2VecAspectIdentification as d2v
 
+from FromTrain import FromTrain
+
 
 
 (restaurantTrainDict,restaurantTestDict,laptopTrainDict, laptopTestDict) = \
@@ -24,8 +26,22 @@ import doc2VecAspectIdentification as d2v
 allRestaurantData = copy.deepcopy(restaurantTrainDict)
 allRestaurantData.update(restaurantTestDict)
 allLaptopData = copy.deepcopy(laptopTrainDict)
-allLaptopData.update(laptopTestDict)
+#allLaptopData.update(laptopTestDict) 
+
+#===============================================================================
+#modified at Mon Nov 28 01:10:36 2016
+#allLaptopData.update(laptopTestDict) 
+#The update sentence should be deleted or use append like function
+#otherwise the data set will be ONLY the testdict
+#===============================================================================
+
+#from_train = FromTrain(allRestaurantData)
+from_train = FromTrain(allLaptopData)
+aspects = from_train.extract_aspects()
+print (aspects)
+
 list_doc2vecExtractedAspects = d2v.getListOfAspects({'laptop':allLaptopData , 'restaurant' : allRestaurantData}) 
+print (list_doc2vecExtractedAspects)
 
 
 #===============================================================================
