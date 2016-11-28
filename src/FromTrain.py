@@ -1,8 +1,10 @@
 '''
 #modified at Mon Nov 28 01:03:16 2016
 This class is used for all of the information extracted from the training data
-
+The possibility of an aspect is an aspect is useless I think
 '''
+import operator
+
 class FromTrain:
 
     def __init__(self, source):
@@ -29,5 +31,25 @@ class FromTrain:
                         self.__plus_one(aspect['@term'])
 
         print ('%d' % cnt + ' reviews counted')
+        return sorted(self.aspects.items(), key=operator.itemgetter(1), reverse = True)
 
-        return self.aspects
+
+    def aspects_possibility(self):
+        aspects = {}
+        reviews = self.source['sentences']['sentence']
+        for review in reviews:
+            for aspect in self.aspects:
+                if aspect in review['text']:
+                    #using two spaces before and after a word to make sure
+                    #this is a word
+                    if ' ' + aspect + ' ' in aspects:
+                        aspects[aspect] += 1
+                    else:
+                        aspects[aspect] = 1
+
+        for aspect in self.aspects:
+            aspects[aspect] = float(aspects[aspect]) / float(self.aspects[aspect])
+            if aspects[aspect] > 1.0:
+                print(aspect, self.aspects[aspect], aspects[aspect])
+
+        return aspects
