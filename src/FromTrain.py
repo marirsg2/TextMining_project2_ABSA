@@ -1,5 +1,5 @@
 '''
-#modified at Mon Nov 28 01:03:16 2016
+#modified at Mon Nov 28 02:52:50 2016
 This class is used for all of the information extracted from the training data
 The possibility of an aspect is an aspect is useless I think
 '''
