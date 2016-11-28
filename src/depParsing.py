@@ -3,10 +3,13 @@ from nltk.parse.stanford import StanfordDependencyParser
 import nltk.data
 
 
+
+
 os.environ['CLASSPATH'] = os.pathsep + '../stanford-parser-full-2015-12-09' + \
-                                                    os.pathsep + '../stanford_postagger/stanford-postagger.jar'
-os.environ['STANFORD_MODELS'] ='../stanford_postagger/models/english-left3words-distsim.tagger'
-os.environ['JAVAHOME'] = "C:\\Program Files\\Java\jre1.8.0_71\\bin"    
+                                                os.pathsep + '../stanford_postagger/stanford-postagger.jar'
+os.environ['STANFORD_MODELS']='../stanford_postagger/models/english-left3words-distsim.tagger'
+os.environ['JAVAHOME']= "/usr/lib/jvm/java-8-openjdk-amd64/jre/bin"    
+
 
 
 def seg_text(text):

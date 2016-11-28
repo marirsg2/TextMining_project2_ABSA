@@ -16,7 +16,7 @@ import FileOperations
                                 FileOperations.loadAndGetRawDataFromPickle(pickleFolder, pickleFile)
 #at this point you have all your training and test data in python dictionaries. Run algorithms
 
-
+print("Here")
 
 
 #===============================================================================

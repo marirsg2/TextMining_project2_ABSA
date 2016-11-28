@@ -18,7 +18,7 @@ def getReviewDictsWithTagging():
     os.environ['CLASSPATH'] = os.pathsep + '../stanford-parser-full-2015-12-09' + \
                                                     os.pathsep + '../stanford_postagger/stanford-postagger.jar'
     os.environ['STANFORD_MODELS']='../stanford_postagger/models/english-left3words-distsim.tagger'
-    os.environ['JAVAHOME']= "C:\\Program Files\\Java\jre1.8.0_71\\bin"    
+    os.environ['JAVAHOME']= "/usr/lib/jvm/java-8-openjdk-amd64/jre/bin"    
     dep_parser = StanfordDependencyParser(model_path="edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz")
     st = StanfordPOSTagger('english-bidirectional-distsim.tagger')
     
@@ -42,7 +42,10 @@ def getReviewDictsWithTagging():
         
         allReviewsAsPOStaggedList = []
         allReviewsAsDEPStaggedList = []
-        for singleReview in allReviewsAsSentencesList:
+        #for singleReview in allReviewsAsSentencesList:
+        for idx in range (0,len(allReviewsAsSentencesList)):            
+            singleReview = allReviewsAsSentencesList[idx]
+            print(singleReview)
             #here each singleReview is a list of sentences eg: [ "The laptop was good", "The price was expensive" ]
             tokenizedSentences = [x.split() for x in singleReview]
             allReviewsAsPOStaggedList.append(st.tag_sents(tokenizedSentences))
@@ -50,6 +53,10 @@ def getReviewDictsWithTagging():
                 generator_dependencyGraphs = dep_parser.raw_parse_sents(singleReview)
             except:
                 print("error with ", singleReview)
+                #!@todo: the error is for the review  ['I actually had the hard drive replaced twice, the mother board once,
+                # the dvd drive twice, then they FINALLY agreed to replace it, (ALL OF THIS IN LESS THAN 1 1/2 YEARS!']
+                #I think it is because of one open "(" without a close. Normalizing the sentence by removing all punctuations
+                # and parenthesis might fix it.
                 generator_dependencyGraphs  = []
             for singleGraph in generator_dependencyGraphs:
                 g = list(singleGraph) #convert into a list from a generator (iterator)
