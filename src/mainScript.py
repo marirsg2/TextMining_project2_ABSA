@@ -39,6 +39,7 @@ allLaptopData = copy.deepcopy(laptopTrainDict)
 from_train = FromTrain(allLaptopData)
 aspects = from_train.extract_aspects()
 print (aspects)
+aspects = from_train.aspects_possibility()
 
 list_doc2vecExtractedAspects = d2v.getListOfAspects({'laptop':allLaptopData , 'restaurant' : allRestaurantData}) 
 print (list_doc2vecExtractedAspects)
