@@ -9,8 +9,7 @@ import copy
 from preProcess import pickleFile, pickleFolder
 import nltkWordnetAspectExtraction as lexicalApproach
 import FileOperations
-import doc2VecAspectIdentification as d2v
-
+import doc2VecAspectIdentification as d2v 
 from FromTrain import FromTrain
 
 
@@ -24,9 +23,9 @@ from FromTrain import FromTrain
 #   Using doc 2 vector to get a list of aspects
 #===============================================================================
 allRestaurantData = copy.deepcopy(restaurantTrainDict)
-allRestaurantData.update(restaurantTestDict)
+allRestaurantData['sentences']['sentence'] = allRestaurantData['sentences']['sentence'] + restaurantTestDict['sentences']['sentence']
 allLaptopData = copy.deepcopy(laptopTrainDict)
-#allLaptopData.update(laptopTestDict) 
+allLaptopData ['sentences']['sentence'] = allLaptopData['sentences']['sentence'] + laptopTestDict['sentences']['sentence']
 
 #===============================================================================
 #modified at Mon Nov 28 01:10:36 2016
@@ -41,8 +40,8 @@ aspects = from_train.extract_aspects()
 print (aspects)
 aspects = from_train.aspects_possibility()
 
-list_doc2vecExtractedAspects = d2v.getListOfAspects({'laptop':allLaptopData , 'restaurant' : allRestaurantData}) 
-print (list_doc2vecExtractedAspects)
+# list_doc2vecExtractedAspects = d2v.getListOfAspects({'laptop':allLaptopData , 'restaurant' : allRestaurantData}) 
+# print (list_doc2vecExtractedAspects)
 
 
 #===============================================================================
