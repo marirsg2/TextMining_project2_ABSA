@@ -50,24 +50,31 @@ def getReviewDictsWithTagging():
             tokenizedSentences = [x.split() for x in singleReview]
             allReviewsAsPOStaggedList.append(st.tag_sents(tokenizedSentences))
             try:
-                generator_dependencyGraphs = dep_parser.raw_parse_sents(singleReview)
+                allSentencesDEPSgraphList = []
+                for singleSentence in singleReview:
+                    singleSentenceDependencyGraphs = []
+                    generator_dependencyGraph = dep_parser.raw_parse_sents([singleSentence])
+                    for singleGraph in generator_dependencyGraph:
+                        g = list(singleGraph) #convert into a list from a generator (iterator)
+                        if len(g) > 0:
+                            listNodeDicts = []
+                            for node in g[0].nodes:
+                                nodeDict = g[0].nodes[node]
+                                listNodeDicts.append(nodeDict)                                        
+                            singleSentenceDependencyGraphs.append(listNodeDicts)
+                        else:
+                            singleSentenceDependencyGraphs.append([])
+                    allSentencesDEPSgraphList.append(singleSentenceDependencyGraphs)
+                #END FOR LOOP
+                allReviewsAsDEPStaggedList.append(allSentencesDEPSgraphList)
             except:
                 print("error with ", singleReview)
                 #!@todo: the error is for the review  ['I actually had the hard drive replaced twice, the mother board once,
                 # the dvd drive twice, then they FINALLY agreed to replace it, (ALL OF THIS IN LESS THAN 1 1/2 YEARS!']
                 #I think it is because of one open "(" without a close. Normalizing the sentence by removing all punctuations
                 # and parenthesis might fix it.
-                generator_dependencyGraphs  = []
-            for singleGraph in generator_dependencyGraphs:
-                g = list(singleGraph) #convert into a list from a generator (iterator)
-                if len(g) > 0:
-                    listNodeDicts = []
-                    for node in g[0].nodes:
-                        nodeDict = g[0].nodes[node]
-                        listNodeDicts.append(nodeDict)                                        
-                    allReviewsAsDEPStaggedList.append(listNodeDicts)
-                else:
-                    allReviewsAsDEPStaggedList.append([])
+                allReviewsAsDEPStaggedList.append([])
+
                      
                             
         #Put the tagged texts back in the dictionary in the same order. The indexes line up, so this makes it easy
