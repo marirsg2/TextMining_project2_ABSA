@@ -23,17 +23,18 @@ def put_word2dict(aspects, word):
         aspects[word] = 1
 
 
-def get_poss_aspects(sentences):
+def get_poss_aspects(all_reviews):
     """
     retain all possible NN and NNS
     """
     aspects_v = {}
-    for s in sentences:
-        for item in s['POStaggedText']:
-            word = item[0]
-            tag = item[1]
-            if tag == 'NN' or tag == 'NNS':
-                put_word2dict(aspects_v, word)
+    for review in all_reviews:
+        for sent in review['POStaggedText']:
+            for item in sent:
+                word = item[0]
+                tag = item[1]
+                if tag == 'NN' or tag == 'NNS':
+                    put_word2dict(aspects_v, word)
 
     return aspects_v
 
@@ -54,6 +55,9 @@ def get_vocabulary(low_freq=True, mutual_asp_rm=False,
                    low_freq_rate = 0.01, remove_top=1):
     """
     get aspects vocabulary restaurant and laptop
+
+    Returns:
+    rst_aspects_v
     """
     restaurant_sentences, laptop_sentences = load_train_sentences()
     lptp_aspects_v = get_poss_aspects(laptop_sentences)
