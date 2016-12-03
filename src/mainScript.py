@@ -37,8 +37,10 @@ allLaptopData ['sentences']['sentence'] = allLaptopData['sentences']['sentence']
 #from_train = FromTrain(allRestaurantData)
 from_train = FromTrain(allLaptopData)
 aspects = from_train.extract_aspects()
-from_train.get_adj_plority()
-#print (aspects)
+adjs = from_train.get_adj_polarity()
+pairs = from_train.get_pair_polarity()
+print (adjs)
+print (pairs)
 aspects = from_train.aspects_possibility()
 
 # list_doc2vecExtractedAspects = d2v.getListOfAspects({'laptop':allLaptopData , 'restaurant' : allRestaurantData}) 
