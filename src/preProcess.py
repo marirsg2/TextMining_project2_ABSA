@@ -61,7 +61,7 @@ def getReviewDictsWithTagging():
                             for node in g[0].nodes:
                                 nodeDict = g[0].nodes[node]
                                 listNodeDicts.append(nodeDict)                                        
-                            singleSentenceDependencyGraphs.append(listNodeDicts)
+                            singleSentenceDependencyGraphs = listNodeDicts
                         else:
                             singleSentenceDependencyGraphs.append([])
                     allSentencesDEPSgraphList.append(singleSentenceDependencyGraphs)
