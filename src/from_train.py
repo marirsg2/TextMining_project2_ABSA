@@ -53,3 +53,10 @@ class FromTrain:
                 print(aspect, self.aspects[aspect], aspects[aspect])
 
         return aspects
+
+#Functions from here are made for task 2
+#modified at Sat Dec  3 13:39:26 2016
+    def get_adj_plority(self):
+        for s in self.source['sentences']['sentence']:
+            print (s)
+

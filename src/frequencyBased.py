@@ -7,7 +7,7 @@ Email: zhza16@lehigh.edu
 function get_aspects will get the possible aspects based on frequency information
 """
 
-from preProcess import pickleFile, pickleFolder
+from config_parser import pickleFile, pickleFolder
 import FileOperations
 
 

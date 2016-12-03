@@ -6,16 +6,16 @@ Created on Nov 20, 2016
 import copy
 
 
-from preProcess import pickleFile, pickleFolder
+from config_parser import pickleFile, pickleFolder
 import nltkWordnetAspectExtraction as lexicalApproach
-import FileOperations
+import file_operations
 import doc2VecAspectIdentification as d2v 
-from FromTrain import FromTrain
+from from_train import FromTrain
 
 
 
 (restaurantTrainDict,restaurantTestDict,laptopTrainDict, laptopTestDict) = \
-                                FileOperations.loadAndGetRawDataFromPickle(pickleFolder, pickleFile)
+                                file_operations.loadAndGetRawDataFromPickle(pickleFolder, pickleFile)
 #at this point you have all your training and test data in python dictionaries. Run algorithms
 
 
@@ -37,7 +37,8 @@ allLaptopData ['sentences']['sentence'] = allLaptopData['sentences']['sentence']
 #from_train = FromTrain(allRestaurantData)
 from_train = FromTrain(allLaptopData)
 aspects = from_train.extract_aspects()
-print (aspects)
+from_train.get_adj_plority()
+#print (aspects)
 aspects = from_train.aspects_possibility()
 
 # list_doc2vecExtractedAspects = d2v.getListOfAspects({'laptop':allLaptopData , 'restaurant' : allRestaurantData}) 

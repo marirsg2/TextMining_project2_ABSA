@@ -2,7 +2,7 @@ import os
 import nltk
 from nltk.parse.stanford import StanfordDependencyParser
 # from preProcess import pickleFile, pickleFolder
-import FileOperations
+from file_operations import FileOperations
 import frequencyBased
 
 os.environ['CLASSPATH'] = '/Users/zarzen/Development/stanford-parser-full-2015-12-09'

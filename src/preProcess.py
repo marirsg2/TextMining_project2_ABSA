@@ -1,15 +1,14 @@
-from FileOperations import FileOperations
+from file_operations import FileOperations
 import os
 from nltk.tag.stanford import StanfordPOSTagger
 from nltk.parse.stanford import StanfordDependencyParser
 from os import listdir
 from os.path import isfile, join
+from config_parser import pickleFolder, pickleFile
 import UtilityFunctions
 import depParsing 
 
 tagedDataPath = '../taged-data/'
-pickleFolder = '../PickledData/'
-pickleFile = 'preProcessedData.p'
 
 def getReviewDictsWithTagging():
     #setup all the variables needed to extract and tag the reviews
