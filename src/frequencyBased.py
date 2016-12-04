@@ -2,18 +2,17 @@
 Author: Zhen Zhang(Zen)
 Email: zhza16@lehigh.edu
 
-"""
-"""
-function get_aspects will get the possible aspects based on frequency information
+
+get_aspects() for getting the possible aspects based on frequency information
 """
 
 from config_parser import pickleFile, pickleFolder
-import FileOperations
+import file_operations
 
 
 def load_train_sentences():
     (restaurantTrainDict,restaurantTestDict,laptopTrainDict, laptopTestDict)\
-        = FileOperations.loadAndGetRawDataFromPickle(pickleFolder, pickleFile)
+        = file_operations.loadAndGetRawDataFromPickle(pickleFolder, pickleFile)
     rst_train_sentences = restaurantTrainDict['sentences']['sentence']
     lptp_train_sentences = laptopTrainDict['sentences']['sentence']
     return rst_train_sentences, lptp_train_sentences
@@ -30,13 +29,17 @@ def put_word2dict(aspects, word):
 def get_poss_aspects(all_reviews):
     """
     retain all possible NN and NNS
+    using the Dependency parsing results
+
+    Returns:
+        aspects_v(dict): contains all NN and NNS from data set. word as key and frequency of word as value.
     """
     aspects_v = {}
     for review in all_reviews:
-        for sent in review['POStaggedText']:
+        for sent in review['DEPStagging']:
             for item in sent:
-                word = item[0]
-                tag = item[1]
+                word = item['word']
+                tag = item['tag']
                 if tag == 'NN' or tag == 'NNS':
                     put_word2dict(aspects_v, word)
 
@@ -62,15 +65,15 @@ def get_aspects(low_freq=True, mutual_asp_rm=False,
     get aspects vocabulary restaurant and laptop
 
     Args:
-    low_freq(boolean): if set true, it will remove the low frequent words
-    low_freq_rate(float): default remove frequency lower than 1% of total number reviews
-    mutual_asp_rm(boolean): remove nouns in both laptop reviews and restaurant reviews
-    remove_top(int): remove the most frequent words
+        low_freq(boolean): if set true, it will remove the low frequent words
+        low_freq_rate(float): default remove frequency lower than 1% of total number reviews
+        mutual_asp_rm(boolean): remove nouns in both laptop reviews and restaurant reviews
+        remove_top(int): remove the most frequent words
 
     Returns:
-    rst_aspects_v(dict): the vocabulary contains possible aspects from frequency based method
+        rst_aspects_v(dict): the vocabulary contains possible aspects from frequency based method
                          keys are words, value are frequency of that word
-    lptp_aspects_v(dict): possible aspects of laptop
+        lptp_aspects_v(dict): possible aspects of laptop
 
     """
     restaurant_sentences, laptop_sentences = load_train_sentences()
@@ -119,6 +122,7 @@ def main():
     print(rst_asp_v)
     print('='*10)
     print(lptp_asp_v)
+    print(len(lptp_asp_v))
 
 
 if __name__ == "__main__":

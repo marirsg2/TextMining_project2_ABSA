@@ -1,25 +1,35 @@
+"""
+Author: Zhen Zhang(Zen)
+Email: zhza16@lehigh.edu
+
+invoke get_aspects() function for obtaining possible aspects from compound relationship
+
+"""
+
 import os
 import nltk
 from nltk.parse.stanford import StanfordDependencyParser
-# from preProcess import pickleFile, pickleFolder
-from file_operations import FileOperations
+import file_operations
 import frequencyBased
-
-os.environ['CLASSPATH'] = '/Users/zarzen/Development/stanford-parser-full-2015-12-09'
-
-pickleFolder = '../PickledData/'
-pickleFile = 'preProcessedData.p'
+from config_parser import pickleFile, pickleFolder
 
 
 def load_train_sentences():
     (restaurantTrainDict, restaurantTestDict, laptopTrainDict, laptopTestDict) \
-        = FileOperations.loadAndGetRawDataFromPickle(pickleFolder, pickleFile)
+        = file_operations.loadAndGetRawDataFromPickle(pickleFolder, pickleFile)
     rst_train_sentences = restaurantTrainDict['sentences']['sentence']
     lptp_train_sentences = laptopTrainDict['sentences']['sentence']
     return rst_train_sentences, lptp_train_sentences
 
 
 def seg_text(text):
+    """
+    helper function
+    segment the text into sentences
+
+    Returns:
+        (list)a list of sentences
+    """
     sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
     ss = sent_detector.tokenize(text.strip())
     return ss
@@ -28,8 +38,11 @@ def seg_text(text):
 def get_depG():
     """
     this function used for testing purpose
-    :return:
+
+    Returns:
+        (dependency graph) for testing
     """
+    os.environ['CLASSPATH'] = '/Users/zarzen/Development/stanford-parser-full-2015-12-09'
     dep_parser = StanfordDependencyParser(model_path="edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz")
 
     tt = '''
@@ -113,8 +126,8 @@ def get_aspects():
     get possible aspects from train data through compound relationship
 
     Returns:
-    vocabulary for laptop
-    vocabulary for restaurant
+        vocabulary for laptop
+        vocabulary for restaurant
     """
     rst_train, lptp_train = load_train_sentences()
     rst_aspects = get_poss_aspects(rst_train)
@@ -135,7 +148,8 @@ def remove_low_freq(poss_asp, verify_dict):
     retain frequency greater than 1
     or one of the compound word is in verify_dict
 
-    :return:
+    Returns:
+        aspects are retained
     """
     retained_asp = {}
     for words in poss_asp:
@@ -152,7 +166,7 @@ def word_in(verify_dict, words):
     words(str): compound words extract from dependency parsing tree
 
     Returns:
-    indicator(boolean)
+        indicator(boolean)
     """
     words = words.split(' ')
     if words[0].strip() in verify_dict:
