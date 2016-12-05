@@ -96,11 +96,12 @@ dictionary search: Get the definition, do dependency parsing.
                 depsSentence = singleReview['DEPStagging'][depsSentenceIndex ]
                 for depsNode in depsSentence[1:] : #we skip the first one which is the root node
                     if depsNode['word'] == aspectWord:
-                        amodAddress =  NO_VALID_ADDRESS # -1 means no address
+                        amodAddress =  [] # -1 means no address
                         try:
                             amodAddress = depsNode['deps']['amod']
                         except:
-                            pass  
+                            amodAddress =  []  
+                            
                         #append the tuple of the aspect word and the adj modifier
                         singleAspectDepsAddresses.append((depsSentenceIndex,depsNode['address'],amodAddress))                                             
                 #END FOR loop through the deps nodes
@@ -108,43 +109,45 @@ dictionary search: Get the definition, do dependency parsing.
             #------------------------------------------------------------------------------ 
             #NOW determine the polarity of the aspect word
             qualifyingWordTuples = [] # each entry is (sentenceIndex, wordAddress, word)
-            for (sentenceIndex, aspectAddress,amodAddress) in singleAspectDepsAddresses:                                
+            for (sentenceIndex, aspectAddress,amodAddresses) in singleAspectDepsAddresses:                                
                 #note the deps parser address does not always match the list index. so iterate through nodes 
                 for singleNode in singleReview['DEPStagging'][sentenceIndex]:
                     #CHECK if the node matches our adjective mod address
-                    if singleNode['address'] == amodAddress: #If amod was -1, then we wont find one
-                        if singleNode['POS'] not in ["JJ", "JJR", "JJS"]:
+                    if singleNode['address'] in amodAddresses: #If amod was -1, then we wont find one
+                        if singleNode['tag'] not in ["JJ", "JJR", "JJS"]:
                             print("Error , incorrect DEPS tree connection with amod")
                         else:
-                            qualifyingWordTuples.append( (sentenceIndex, singleNode['word'],singleNode['POS']) )
+                            qualifyingWordTuples.append( (sentenceIndex, singleNode['word'],singleNode['tag']) )
                     #end if the address was the adj modifier address
                     elif singleNode['head'] == aspectAddress:
-                        qualifyingWordTuples.append((sentenceIndex, singleNode['word'],singleNode['POS']))
+                        qualifyingWordTuples.append((sentenceIndex, singleNode['word'],singleNode['tag']))
                     #if it is an adjective , check if it was within 3 distance away and NOT pointing to another nsubj
-                    elif singleNode['POS'] in ["JJ", "JJR", "JJS"]:
+                    elif singleNode['tag'] in ["JJ", "JJR", "JJS"]:                        
+                        #check if it does not modify another noun
+                        try:
+                            nounSubjects = singleNode['deps']['nsubj']                             
+                            if  aspectAddress in nounSubjects:  #check if it is the subject before checking for noun modifier                                          
+                                qualifyingWordTuples.append((sentenceIndex, singleNode['word'],singleNode['tag']))
+                                continue
+                            else:
+                                continue #the nsubj is another, skip this word, back to for loop
+                        except:
+                            pass
+                        try:
+                            nounModifiers = singleNode['deps']['nmod']       
+                            if aspectAddress in nounModifiers:                                            
+                                qualifyingWordTuples.append((sentenceIndex, singleNode['word'],singleNode['tag']))
+                                continue
+                            else:
+                                continue #the nsubj is another, skip this word, back to for loop
+                        except:
+                            pass
+                        #if we made it here for this case, then the adjective is close to the aspect , and does not qualify
+                        # any other noun, then take it as valid
                         if  abs(singleNode['address'] -  aspectAddress) <= 3:
-                            #check if it does not modify another noun
-                            try:
-                                if singleNode['deps']['nsubj'] == aspectAddress:                                            
-                                    qualifyingWordTuples.append((sentenceIndex, singleNode['word'],singleNode['POS']))
-                                    continue
-                                else:
-                                    continue #the nsubj is another, skip this word, back to for loop
-                            except:
-                                pass
-                            try:
-                                if singleNode['deps']['nmod'] == aspectAddress:                                            
-                                    qualifyingWordTuples.append((sentenceIndex, singleNode['word'],singleNode['POS']))
-                                    continue
-                                else:
-                                    continue #the nsubj is another, skip this word, back to for loop
-                            except:
-                                pass
-                            #if we made it here for this case, then the adjective is close to the aspect , and does not qualify
-                            # any other noun, then take it as valid
-                            qualifyingWordTuples.append((sentenceIndex, singleNode['word'],singleNode['POS']))
+                            qualifyingWordTuples.append((sentenceIndex, singleNode['word'],singleNode['tag']))
                         #END if the word is within 3 addresses
-                    #END elif singleNode['POS'] in ["JJ", "JJR", "JJS"]:
+                    #END elif singleNode['tag'] in ["JJ", "JJR", "JJS"]:
                 #END FOR loop through the DEPS node
             #END FOR loop through the singleAspectDepsAddresses
             #------------------------------------------------------------------------------ 
