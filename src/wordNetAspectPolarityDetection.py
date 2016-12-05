@@ -120,7 +120,8 @@ dictionary search: Get the definition, do dependency parsing.
                             qualifyingWordTuples.append( (sentenceIndex, singleNode['word'],singleNode['tag']) )
                     #end if the address was the adj modifier address
                     elif singleNode['head'] == aspectAddress:
-                        qualifyingWordTuples.append((sentenceIndex, singleNode['word'],singleNode['tag']))
+                        if singleNode['tag'] in ["JJ", "JJR", "JJS" ]:
+                            qualifyingWordTuples.append((sentenceIndex, singleNode['word'],singleNode['tag']))                            
                     #if it is an adjective , check if it was within 3 distance away and NOT pointing to another nsubj
                     elif singleNode['tag'] in ["JJ", "JJR", "JJS"]:                        
                         #check if it does not modify another noun
@@ -145,15 +146,14 @@ dictionary search: Get the definition, do dependency parsing.
                         #if we made it here for this case, then the adjective is close to the aspect , and does not qualify
                         # any other noun, then take it as valid
                         if  abs(singleNode['address'] -  aspectAddress) <= 3:
-                            qualifyingWordTuples.append((sentenceIndex, singleNode['word'],singleNode['tag']))
-                        #END if the word is within 3 addresses
+                            qualifyingWordTuples.append((sentenceIndex, singleNode['word'],singleNode['tag']))                        
                     #END elif singleNode['tag'] in ["JJ", "JJR", "JJS"]:
                 #END FOR loop through the DEPS node
             #END FOR loop through the singleAspectDepsAddresses
             #------------------------------------------------------------------------------ 
             #At this point we have all the qualifying words for the aspect
             for singleQualifierTuple in qualifyingWordTuples:
-                lemmaWord = lemmatizer.lemmatize(singleQualifierTuple[1], singleQualifierTuple[2])
+                lemmaWord = lemmatizer.lemmatize(singleQualifierTuple[1])
                 
                             
                             
