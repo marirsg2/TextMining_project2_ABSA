@@ -189,10 +189,6 @@ def get_node_with_address(address, depG):
 
 
 def test():
-    dep_parser = StanfordDependencyParser(model_path="edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz")
-    dep_graph = dep_parser.raw_parse('It\'s like 9 punds, but if you can look past it, it\'s GREAT!')
-    # for item in dep_graph:
-    #     print(item)
 
     tt = '''
     I previously purchased a 13" macbook (had pro specs and was aluminum style) which had a

@@ -59,6 +59,20 @@ def remove_low_freq(aspects, rate, data_size):
         del aspects[word]
 
 
+def remove_short_word(aspects):
+    """
+    remove word like 'i' 'it' 'as'
+    :param aspects:
+    :return:
+    """
+    del_list = []
+    for word in aspects:
+        if len(word) <=2:
+            del_list.append(word)
+    for word in del_list:
+        del aspects[word]
+
+
 def get_aspects(low_freq=True, mutual_asp_rm=False,
                 low_freq_rate = 0.01, remove_top=1):
     """
@@ -90,6 +104,9 @@ def get_aspects(low_freq=True, mutual_asp_rm=False,
 
     remove_top_freq(lptp_aspects_v, remove_top)
     remove_top_freq(rst_apsects_v, remove_top)
+
+    remove_short_word(lptp_aspects_v)
+    remove_short_word(rst_apsects_v)
 
     return rst_apsects_v, lptp_aspects_v
 
