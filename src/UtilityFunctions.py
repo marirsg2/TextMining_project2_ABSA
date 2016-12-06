@@ -10,6 +10,19 @@ import os
 #===============================================================================
 # 
 #===============================================================================
+# https://github.com/RaRe-Technologies/gensim/blob/develop/docs/notebooks/doc2vec-IMDB.ipynb
+def getNormalized_text(text):
+    norm_text = text.lower()
+    # Replace breaks with spaces
+    norm_text = norm_text.replace('<br />', ' ')
+    # Pad punctuation with spaces on both sides
+    for char in ['.', '"', ',', '(', ')', '!', '?', ';', ':']:
+        norm_text = norm_text.replace(char, ' ')
+    return norm_text.split()
+
+#===============================================================================
+# 
+#===============================================================================
 
 def pickleListOfObjects(pickleFolder, pickleFileName, listOfObjects):
     '''
