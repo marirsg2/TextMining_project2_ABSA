@@ -171,6 +171,44 @@ def getPosTaggingWordLemmas(aspectWord,singleReview,lemmatizer):
         print(aspectWord,lemmaWordsList)
     
     return lemmaWordsList
+
+#===============================================================================
+# 
+#===============================================================================
+
+def getDefiningWords(lemmaSet,lemmatizer,depth=1, englishDictionary = None):
+    '''
+    @summary: gets the words related to the definition of the lemma, and then see the definitions
+    for each of the words in the original definition. Repeat for the specified depth.
+    removes trivial words like a,the,of, it, etc.
+    '''
+    trivialLowerCaseWords = ['a','of','the', 'it', 'of', 'which', 'who', 'what', 'when', 'i', 'you', 'he', 'she', 'then', 'before',
+                             'after','or','and', 'to']
+    
+    definitionWordTokens = set()
+    for singleLemma in lemmaSet:
+        try:
+            wordNetDefinition = wn.synsets(singleLemma)[0].definition()
+            definitionWordTokens =  definitionWordTokens.union(set(util.getNormalized_text(wordNetDefinition)))
+        except:
+            pass #no wordnet definitions                 
+        try:
+            dictionaryDefinition = englishDictionary.googlemeaning(singleLemma)            
+            dictionaryDefinition = dictionaryDefinition.split("\n")[1]
+            definitionWordTokens= definitionWordTokens.union(set(util.getNormalized_text(dictionaryDefinition)))
+        except:
+            pass # if no english dictionary, just use wordnet
+        #END IF
+        definitionWordTokens= set(definitionWordTokens)
+        definitionWordTokens = set([lemmatizer.lemmatize(x) for x in definitionWordTokens])
+    if depth > 0:
+        definitionWordTokens = definitionWordTokens.union(
+            getDefiningWords(definitionWordTokens, lemmatizer,depth-1, englishDictionary))
+    
+    return definitionWordTokens
+    
+    
+
 #===============================================================================
 # 
 #===============================================================================
@@ -189,32 +227,36 @@ def getDictionaryPolarity(lemmaSet, lemmatizer, singleReview, positiveAssociatio
     for singleLemma  in lemmaSet:
         #get the score
         polarityScore = 0        
-        wordNetDefinition = wn.synsets(singleLemma)[0].definition()
-        wordNetDefinition = util.getNormalized_text(wordNetDefinition)        
-        definitionWordTokens = wordNetDefinition.split()
-        if englishDictionary != None:
-            dictionaryDefinition = englishDictionary.googlemeaning(singleLemma)
-            dictionaryDefinition =util.getNormalized_text(dictionaryDefinition)
-            definitionWordTokens= definitionWordTokens+ dictionaryDefinition.split()
-        #END IF
-        definitionWordTokens= set(definitionWordTokens)
-        definitionWordTokens = set([lemmatizer.lemmatize(x) for x in definitionWordTokens])
+        polarityMultiplier = 1 #is -1 if the word was negated in the sentence
+        if singleLemma.startswith("-"):
+            polarityMultiplier = -1
+            singleLemma[1:] #ignore the "-" 
+        
+        definitionLemmatizedWordTokenSet = getDefiningWords(set([singleLemma]),lemmatizer, 1,englishDictionary)
+
         #now count the scores
-        for singleWord in definitionWordTokens:            
+        for singleWord in definitionLemmatizedWordTokenSet:            
             scorePositiveCountMultiplier = 0
             scoreNegativeCountMultiplier = 0 # if the word was inverted with ["No", Not, "Never"] or other such words
-            #check if there is polarity Change Word before the  
-            
-            #store the polarity inversion in the lemma string as a "-" ??
-            
+            #check if there is polarity Change Word before the                                      
             if singleWord in positiveAssociationWords:
-                polarityScore+=1
+                polarityScore+= 1*polarityMultiplier
             elif singleWord in negativeAssociationWords:
-                polarityScore -=1
+                polarityScore -=1*polarityMultiplier            
+            #if the polarity score is -ve for this lemma , but the total score so far is +ve, then the review is conflicted
+            if (polarityScore >0 and totalPolarityScore <0) or (polarityScore <0 and totalPolarityScore >0):
+                conflicted = True            
+            polarityScore = polarityScore/polarityScore # so it will be +/- 1 
+            totalPolarityScore += polarityScore
                 
-        #------------------------------------------------------------------------------ 
-        #check if conflicted.
-        # if we see a "but,however," or other words showing conflict, then set conflict to true
+                
+        ret_polarity = "neutral"
+        if totalPolarityScore > 0:
+            ret_polarity = "positive"
+        elif totalPolarityScore < 0:
+            ret_polarity = "negative"
+        
+        return (ret_polarity,conflicted, polarityScore) 
                 
                 
 
@@ -226,7 +268,7 @@ def getDictionaryPolarity(lemmaSet, lemmatizer, singleReview, positiveAssociatio
 #===============================================================================
 # 
 #===============================================================================
-def unsupervisedWordNetPolarity_updateDictWithAspectPolarityPairs(allRestaurantData, englishDict = False):
+def unsupervisedWordNetPolarity_updateDictWithAspectPolarityPairs(allRestaurantData, hasEnglishDict  = False):
     '''
     @summary: Now load the reviews with deps parsing, and ASSUME the aspect is known. 
 
@@ -271,8 +313,8 @@ dictionary search: Get the definition, do dependency parsing.
     polarityChangeWords = ['not', 'never', 'over', 'excess']
     
     lemmatizer = nltk.stem.WordNetLemmatizer()
-    englishDict = None
-    if englishDict == True:
+    englishDictionary  = None
+    if hasEnglishDict == True:
         englishDictionary = PyDictionary() #optional can be turned off    
         
     positiveAssociationWords = [lemmatizer.lemmatize(x) for x in positiveAssociationWords]
@@ -311,10 +353,11 @@ dictionary search: Get the definition, do dependency parsing.
             # WHY does this test case fail for "atmosphere" The design and atmosphere is just as good.  Atmosphere failed ??
     
        
-#             lemmaSet = set(depsLemmaList + posLemmaList)            
-#             aspectPolarity = getDictionaryPolarity(lemmaSet,lemmatizer,
-#                                                    singleReview,positiveAssociationWords,negativeAssociationWords,neutralWords,
-#                                                    englishDictionary)
+            lemmaSet = set(depsLemmaList + posLemmaList)            
+            (aspectPolarity ,isConflicted, polarityScore)= getDictionaryPolarity(lemmaSet,lemmatizer,
+                                                   singleReview,positiveAssociationWords,negativeAssociationWords,neutralWords,
+                                                   englishDictionary)
+            print (aspectPolarity ,isConflicted, polarityScore)
              
              
 
