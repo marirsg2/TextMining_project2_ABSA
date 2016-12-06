@@ -6,5 +6,6 @@ in the reviews.
 
   REference the paper and say it was suggested, but very noisy in the number of bad nouns that you get from the many definitions
   
-  
   2) If doc 2 vec is used, need to specify how to install gensim. Either pip or conda
+  
+  3) need to install PyDictionary (pip)
