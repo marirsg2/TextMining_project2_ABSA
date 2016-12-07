@@ -8,4 +8,8 @@ in the reviews.
   
   2) If doc 2 vec is used, need to specify how to install gensim. Either pip or conda
   
-  3) need to install PyDictionary (pip)
+ 
+ 3) The wordnet approach for polarity depended on finding the right adjective, lemmatizing properly, and having
+ the right seed set of words. 
+ 
+  Much easier to use training data for seed words.
