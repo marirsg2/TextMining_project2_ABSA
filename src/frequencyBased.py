@@ -24,6 +24,7 @@ def load_test_sentences():
     lptp_test_sentences = laptopTestDict['sentences']['sentence']
     return rst_test_sentences, lptp_test_sentences
 
+
 def put_word2dict(aspects, word):
     word = word.lower()
     if word in aspects:

@@ -28,14 +28,14 @@ def evaluate():
     eval_on_one_set(train_lptp_sentences, freq_combined_lptp_aspects)
     print('*'*10 + "End frequency" + '*'*10)
 
-    print("TF-IDF: " + '*'*10 )
+    print('*'*10 + "TF-IDF: " + '*'*10 )
     eval_on_one_set(train_rst_sentences, tfidf_combined_rst_aspects)
     eval_on_one_set(train_lptp_sentences, tfidf_combined_lptp_aspects)
     print('*' * 10 + "End TF-IDF" + '*' * 10)
 
     print('='*80)
     # TEST set
-    print('On Test data')
+    print('$' * 10 + 'On Test data' + '$'*10)
     test_rst, test_lptp = frequencyBased.load_test_sentences()
     print('*'*10 + "Frequency based method : " + '*'*10)
 
