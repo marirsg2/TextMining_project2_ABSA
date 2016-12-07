@@ -17,6 +17,12 @@ def load_train_sentences():
     lptp_train_sentences = laptopTrainDict['sentences']['sentence']
     return rst_train_sentences, lptp_train_sentences
 
+def load_test_sentences():
+    (restaurantTrainDict,restaurantTestDict,laptopTrainDict, laptopTestDict)\
+        = file_operations.loadAndGetRawDataFromPickle(pickleFolder, pickleFile)
+    rst_test_sentences = restaurantTestDict['sentences']['sentence']
+    lptp_test_sentences = laptopTestDict['sentences']['sentence']
+    return rst_test_sentences, lptp_test_sentences
 
 def put_word2dict(aspects, word):
     word = word.lower()

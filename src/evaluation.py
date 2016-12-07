@@ -1,23 +1,58 @@
 import depParsing
 import frequencyBased
+import TF_IDF
+import file_operations
+
 
 
 def evaluate():
-    """
 
-    :return:
-    """
-    rst_asp_v, lptp_asp_v = frequencyBased.get_aspects(low_freq_rate=0.005, remove_top=2, mutual_asp_rm=True)
-    rst_com_v, lptp_com_v = depParsing.get_aspects()
+    freq_rst_asp, freq_lptp_asp = frequencyBased.get_aspects()
+    tfidf_rst_asp, tfidf_lptp_asp = TF_IDF.get_aspects()
+    rst_com, lptp_com = depParsing.get_aspects()
 
     # new syntax available py3.5 to combine dictionary
-    combined_rst_aspects = {**rst_asp_v, **rst_com_v}
-    combined_lptp_aspects = {**lptp_asp_v, **lptp_com_v}
+    freq_combined_rst_aspects = {**freq_rst_asp, **rst_com}
+    freq_combined_lptp_aspects = {**freq_lptp_asp, **lptp_com}
 
-    # eval on train
-    restaurant_sentences, laptop_sentences = frequencyBased.load_train_sentences()
-    eval_on_one_set(restaurant_sentences, combined_rst_aspects)
-    eval_on_one_set(laptop_sentences, combined_lptp_aspects)
+    tfidf_combined_rst_aspects = {**tfidf_rst_asp, **rst_com}
+    tfidf_combined_lptp_aspects = {**tfidf_lptp_asp, **lptp_com}
+
+    # Train set
+    train_rst_sentences, train_lptp_sentences = frequencyBased.load_train_sentences()
+    print('$' * 10 + "On training data: " + '$'*10)
+    print('*'*10 +"Frequency based method : "+ '*'*10)
+    print('-'*10 + "Restaurant" + '-'*10)
+    eval_on_one_set(train_rst_sentences, freq_combined_rst_aspects)
+    print('-' * 10 + "Laptop" + '-' * 10)
+    eval_on_one_set(train_lptp_sentences, freq_combined_lptp_aspects)
+    print('*'*10 + "End frequency" + '*'*10)
+
+    print("TF-IDF: " + '*'*10 )
+    eval_on_one_set(train_rst_sentences, tfidf_combined_rst_aspects)
+    eval_on_one_set(train_lptp_sentences, tfidf_combined_lptp_aspects)
+    print('*' * 10 + "End TF-IDF" + '*' * 10)
+
+    print('='*80)
+    # TEST set
+    print('On Test data')
+    test_rst, test_lptp = frequencyBased.load_test_sentences()
+    print('*'*10 + "Frequency based method : " + '*'*10)
+
+    print('-' * 10 + "Restaurant" + '-' * 10)
+    eval_on_one_set(test_rst, freq_combined_rst_aspects)
+    print('-' * 10 + "Laptop" + '-' * 10)
+    eval_on_one_set(test_lptp, freq_combined_lptp_aspects)
+
+    print('*' * 10 + "End frequency" + '*' * 10)
+
+    print('*'*10 + "TF-IDF: " + '*'*10)
+    print('-' * 10 + "Restaurant" + '-' * 10)
+    eval_on_one_set(test_rst, tfidf_combined_rst_aspects)
+    print('-' * 10 + "Laptop" + '-' * 10)
+    eval_on_one_set(test_lptp, tfidf_combined_lptp_aspects)
+    print('*' * 10 + "End TF-IDF" + '*' * 10)
+
 
 
 def eval_on_one_set(labeled_data, aspects_dict):
@@ -37,7 +72,6 @@ def eval_on_one_set(labeled_data, aspects_dict):
 
         true_aspects = get_aspects(sent)
         poss_aspects = []
-        print('true aspects: ' + str(true_aspects))
 
         for aspect in aspects_dict:
             if aspect in text:
@@ -51,9 +85,6 @@ def eval_on_one_set(labeled_data, aspects_dict):
         for word in del_overlap:
             poss_aspects.remove(word)
 
-        print('possible aspects: ' + str(poss_aspects))
-        print(text)
-
         _TP = len(set(true_aspects).intersection(poss_aspects))
 
         _FN = len(true_aspects) - _TP
@@ -61,10 +92,13 @@ def eval_on_one_set(labeled_data, aspects_dict):
         TP += _TP
         FN += _FN
         FP += _FP
-        print('TP: ' + str(_TP))
-        print('FN: ' + str(_FN))
-        print('FP: ' + str(_FP))
-        print('*' * 20)
+        # print('true aspects: ' + str(true_aspects))
+        # print('possible aspects: ' + str(poss_aspects))
+        # print(text)
+        # print('TP: ' + str(_TP))
+        # print('FN: ' + str(_FN))
+        # print('FP: ' + str(_FP))
+        # print('*' * 20)
 
     precision = float(TP) / (TP+FP)
     recall = float(TP) / (TP + FN)
