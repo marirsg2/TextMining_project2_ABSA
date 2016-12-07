@@ -10,6 +10,12 @@ in the reviews.
   
  
  3) The wordnet approach for polarity depended on finding the right adjective, lemmatizing properly, and having
- the right seed set of words. 
- 
-  Much easier to use training data for seed words.
+ the right seed set of words. Lemmatizer was weak, tried lemmatizing as adjective.
+ 	Much easier to use training data for seed words.
+ 	
+ 	a) Was actually more successful without the dictionary when using the training data !!
+ 	b) For the unsupervised case the dictionary actually helped with the results
+ 	c) A majority of the results with the dictionary and the unsupervised case was neutral, because it 
+ 	     was unable to find a match with the positive, negative or neutral association words.
+ 	    d) 'but' , ' but' , ',but' ,
+ 	
