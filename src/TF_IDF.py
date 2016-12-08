@@ -11,8 +11,8 @@ def get_aspects():
     rst_aspects = cal_TF_IDF(rst_aspects, outside_dict)
     lptp_aspects = cal_TF_IDF(lptp_aspects, outside_dict)
 
-    rst_aspects = keep_top_freq(rst_aspects, 80)
-    lptp_aspects = keep_top_freq(lptp_aspects, 80)
+    rst_aspects = keep_top_freq(rst_aspects, 100)
+    lptp_aspects = keep_top_freq(lptp_aspects, 100)
 
     return rst_aspects, lptp_aspects
 

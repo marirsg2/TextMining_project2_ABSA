@@ -2,8 +2,7 @@ import depParsing
 import frequencyBased
 import TF_IDF
 import file_operations
-
-
+from from_train import FromTrain
 
 def evaluate():
 
@@ -54,6 +53,22 @@ def evaluate():
     print('*' * 10 + "End TF-IDF" + '*' * 10)
 
 
+def evaluate2():
+    """
+    """
+    from mainScript import laptopTrainDict, restaurantTrainDict
+    lptp_train = FromTrain(laptopTrainDict)
+    rst_train = FromTrain(restaurantTrainDict)
+    
+    test_rst, test_lptp = frequencyBased.load_test_sentences()
+    print('*'*10 + "Song supervised from train method : " + '*'*10)
+
+    print('-' * 10 + "Restaurant" + '-' * 10)
+    eval_on_one_set(test_rst, rst_train.extract_aspects())
+    print('-' * 10 + "Laptop" + '-' * 10)
+    eval_on_one_set(test_lptp, lptp_train.extract_aspects())
+
+
 
 def eval_on_one_set(labeled_data, aspects_dict):
     """
@@ -92,13 +107,13 @@ def eval_on_one_set(labeled_data, aspects_dict):
         TP += _TP
         FN += _FN
         FP += _FP
-        # print('true aspects: ' + str(true_aspects))
-        # print('possible aspects: ' + str(poss_aspects))
-        # print(text)
-        # print('TP: ' + str(_TP))
-        # print('FN: ' + str(_FN))
-        # print('FP: ' + str(_FP))
-        # print('*' * 20)
+        print('true aspects: ' + str(true_aspects))
+        print('possible aspects: ' + str(poss_aspects))
+        print(text)
+        print('TP: ' + str(_TP))
+        print('FN: ' + str(_FN))
+        print('FP: ' + str(_FP))
+        print('*' * 20)
 
     precision = float(TP) / (TP+FP)
     recall = float(TP) / (TP + FN)
@@ -127,4 +142,4 @@ def get_aspects(sent):
     return ret
 
 if __name__ == "__main__":
-    evaluate()
+    evaluate2()

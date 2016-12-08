@@ -33,7 +33,6 @@ class FromTrain:
                         self.__plus_one(aspect['@term'])
 
         print ('%d' % cnt + ' reviews counted')
-        print (self.aspects['screen'])
         return self.aspects
         return sorted(self.aspects.items(), key=operator.itemgetter(1), reverse = True)
 
@@ -60,9 +59,9 @@ class FromTrain:
 
     def aspects_performance(self, test_source):
         aspects = self.extract_aspects()
-        print (aspects['screen'])
-        print ('screen' in aspects)
-        print (len(aspects))
+        # print (aspects['screen'])
+        # print ('screen' in aspects)
+        # print (len(aspects))
         test_aspects = self.extract_aspects(test_source)
         print (len(test_aspects))
 
