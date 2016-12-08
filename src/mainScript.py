@@ -34,14 +34,16 @@ allLaptopData ['sentences']['sentence'] = allLaptopData['sentences']['sentence']
 #otherwise the data set will be ONLY the testdict
 #===============================================================================
 
-#from_train = FromTrain(allLaptopData)
-from_train = FromTrain(laptopTrainDict)
+from_train = FromTrain(allLaptopData)
+#from_train = FromTrain(laptopTrainDict)
 #aspects = from_train.extract_aspects()
-res = from_train.aspects_performance(laptopTestDict)
+#res = from_train.aspects_performance(laptopTestDict)
 #res = from_train.aspects_performance(laptopTrainDict)
 #res = from_train.aspects_performance(allLaptopData)
 #res = from_train.aspects_performance(allLaptopData)
-print (res)
+res = from_train.get_pair_polarity()
+for r in res:
+    print (r)
 
 # list_doc2vecExtractedAspects = d2v.getListOfAspects({'laptop':allLaptopData , 'restaurant' : allRestaurantData}) 
 # print (list_doc2vecExtractedAspects)
