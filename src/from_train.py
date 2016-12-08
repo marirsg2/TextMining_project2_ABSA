@@ -105,6 +105,8 @@ class FromTrain:
                     if 'compound' in word['deps']:
                         for pos in word['deps']['compound']:
                             tmpword = self.__get_word_by_address(dep, pos)['word'] + ' ' + tmpword
+                        if len(word['deps']['compound']) > 1:
+                            print (tmpword)
                     for pos in word['deps']['amod']:
                         if tmpword in polarities:
                             p = polarities[tmpword]
