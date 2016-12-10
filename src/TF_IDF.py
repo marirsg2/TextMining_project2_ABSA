@@ -51,6 +51,7 @@ def keep_top_freq(aspects, _n):
         ret[word] = aspects[word]
     return ret
 
+
 def test():
     print(get_aspects())
 
