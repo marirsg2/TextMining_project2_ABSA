@@ -358,11 +358,11 @@ dictionary search: Get the definition, do dependency parsing.
                                                    neutralWords, useDictionary)                   
             singleReview['dictAspectPolarity'][aspectWord] = aspectPolarity
             
-            print("============================================================")  
-            print("SENTENCE =", singleReview['text'], "\nAspect Word =", aspectWord, " Aspect Polarity =", truePolarity)
-            print("DEPS lemmas =", depsLemmaList )
-            print("POS lemmas =", posLemmaList )
-            print("dictionary polarity = " , aspectPolarity)
+#             print("============================================================")  
+#             print("SENTENCE =", singleReview['text'], "\nAspect Word =", aspectWord, " Aspect Polarity =", truePolarity)
+#             print("DEPS lemmas =", depsLemmaList )
+#             print("POS lemmas =", posLemmaList )
+#             print("dictionary polarity = " , aspectPolarity)
     #END FOR loop through reviews
     
     for singleReview in allInputData['sentences']['sentence']:
@@ -431,21 +431,21 @@ dictionary search: Get the definition, do dependency parsing.
                     pass#this was a failed case, ignore
         #end for loop through all the reviews
         
-        if totalPositiveTerms != 0:
-            print("Positive cases" , totalPositiveTerms, correctPositiveTerms, 
-                                                    correctPositiveTerms/totalPositiveTerms)
-        if totalNegativeTerms != 0:
-            print("Negative cases", totalNegativeTerms, correctNegativeTerms,
-                                                    correctNegativeTerms/totalNegativeTerms)
-        if totalNeutralTerms != 0:
-            print("Neutral cases" , totalNeutralTerms, correctNeutralTerms,
-                                                        correctNeutralTerms/totalNeutralTerms)
-        if totalconflictTerms != 0:
-            print("Conflict cases", totalconflictTerms, correctconflictTerms,
-                                                        correctconflictTerms/totalconflictTerms)
-            
-        print ("total success", (correctPositiveTerms+correctNegativeTerms+correctNeutralTerms+correctconflictTerms)/
-                                                (totalconflictTerms+totalNegativeTerms+totalNeutralTerms+totalPositiveTerms) )
+    if totalPositiveTerms != 0:
+        print("Positive cases" , totalPositiveTerms, correctPositiveTerms, 
+                                                correctPositiveTerms/totalPositiveTerms)
+    if totalNegativeTerms != 0:
+        print("Negative cases", totalNegativeTerms, correctNegativeTerms,
+                                                correctNegativeTerms/totalNegativeTerms)
+    if totalNeutralTerms != 0:
+        print("Neutral cases" , totalNeutralTerms, correctNeutralTerms,
+                                                    correctNeutralTerms/totalNeutralTerms)
+    if totalconflictTerms != 0:
+        print("Conflict cases", totalconflictTerms, correctconflictTerms,
+                                                    correctconflictTerms/totalconflictTerms)
+        
+    print ("total success", (correctPositiveTerms+correctNegativeTerms+correctNeutralTerms+correctconflictTerms)/
+                                            (totalconflictTerms+totalNegativeTerms+totalNeutralTerms+totalPositiveTerms) )
               
 #==========================================================
 # 
