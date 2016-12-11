@@ -4,10 +4,8 @@ Created on Dec 2, 2016
 @author: marir
 '''
 
-from PyDictionary import PyDictionary
 from nltk.corpus import wordnet as wn
 import nltk.stem
-import math
 
 import UtilityFunctions as util
 
@@ -164,11 +162,6 @@ def getPosTaggingWordLemmas(aspectWord,singleReview,lemmatizer):
                             lemmaWordsList.append(lemmaWord)
                     elif posSentence[sentenceIndex][0].startswith(","):
                         break; #new sentence clause, less confidence that adjective was connected. 
-
-    if len(lemmaWordsList) > 1:
-        print("found multiple adjectives for the aspect in the sentence")
-        print(singleReview['text'])
-        print(aspectWord,lemmaWordsList)
     
     return lemmaWordsList
 
@@ -182,8 +175,11 @@ def getDefiningWords(lemmaSet,lemmatizer,depth=1, englishDictionary = None):
     for each of the words in the original definition. Repeat for the specified depth.
     removes trivial words like a,the,of, it, etc.
     '''
-    trivialLowerCaseWords = ['a','of','the', 'it', 'of', 'which', 'who', 'what', 'when', 'i', 'you', 'he', 'she', 'then', 'before',
-                             'after','or','and', 'to']
+    #TODO  parse the sentence definitions and only store adjectives for delving deeper. Maybe the nouns
+    #     as well. As of now, we just filter from a list 
+    
+    trivialLowerCaseWords = set( ['a','of','the', 'it', 'of', 'which', 'who', 'what', 'when', 'i', 'you', 'he', 'she', 'then', 'before',
+                             'after','or','and', 'to','with', 'an', 'not', 'cannot' , 'in' , 'can' , 'make', 'give', 'either', 'neither', 'nor' ,'be', 'is','so'])
     
     definitionWordTokens = set()
     for singleLemma in lemmaSet:
@@ -193,13 +189,16 @@ def getDefiningWords(lemmaSet,lemmatizer,depth=1, englishDictionary = None):
         except:
             pass #no wordnet definitions                 
         try:
-            dictionaryDefinition = englishDictionary.googlemeaning(singleLemma)            
-            dictionaryDefinition = dictionaryDefinition.split("\n")[1]
-            definitionWordTokens= definitionWordTokens.union(set(util.getNormalized_text(dictionaryDefinition)))
+            dictionaryDefinitionDict = englishDictionary.meaning(singleLemma)            
+            dictionaryDefinitionString = ""
+            for key in dictionaryDefinitionDict:
+                for definition in dictionaryDefinitionDict[key]:
+                    dictionaryDefinitionString = dictionaryDefinitionString + " " + definition                            
+            definitionWordTokens= definitionWordTokens.union(set(util.getNormalized_text(dictionaryDefinitionString)))
         except:
             pass # if no english dictionary, just use wordnet
         #END IF
-        definitionWordTokens= set(definitionWordTokens)
+        definitionWordTokens= set(definitionWordTokens).difference(trivialLowerCaseWords)
         definitionWordTokens = set([lemmatizer.lemmatize(x) for x in definitionWordTokens])
     if depth > 0:
         definitionWordTokens = definitionWordTokens.union(
@@ -213,50 +212,56 @@ def getDefiningWords(lemmaSet,lemmatizer,depth=1, englishDictionary = None):
 # 
 #===============================================================================
 
-def getDictionaryPolarity(lemmaSet, lemmatizer, singleReview, positiveAssociationWords,
-                          negativeAssociationWords,neutralWords,englishDictionary):
+def getWordPolarity(lemmaSet, lemmatizer, singleReview, positiveAssociationWords,
+                          negativeAssociationWords,neutralWords, useDictionary = True):
     '''
     @summary: 
         1) For each qualifier word determine the polarity by looking at it's definition. If the definition does not exist, ignore
         2) if it exists, get all the words and lemmatize them. Score the number of pos, neg, and neutral words
             if preceeded by not, no, never, then score oppposite. Polarity is +/-, neutral score is seperate.
-            If there is a "but", "however", then the word is conflicted, simply set neutral to a negative (-1)        
+            If there is a "but", "however", then the word is conflict, simply set neutral to a negative (-1)        
     '''
     totalPolarityScore = 0
-    conflicted = False
+    conflict = False
     for singleLemma  in lemmaSet:
-        #get the score
-        polarityScore = 0        
+        #get the score        
+        polarityScore = 0
+        lemmaPolarityScore = 0        
         polarityMultiplier = 1 #is -1 if the word was negated in the sentence
         if singleLemma.startswith("-"):
             polarityMultiplier = -1
             singleLemma[1:] #ignore the "-" 
-        
-        definitionLemmatizedWordTokenSet = getDefiningWords(set([singleLemma]),lemmatizer, 1,englishDictionary)
+        definitionLemmatizedWordTokenSet = set()
+        if useDictionary:
+            definitionLemmatizedWordTokenSet = getDefiningWords(set([singleLemma]),lemmatizer, 1,None)
+        definitionLemmatizedWordTokenSet.add(singleLemma)
 
         #now count the scores
-        for singleWord in definitionLemmatizedWordTokenSet:            
-            scorePositiveCountMultiplier = 0
-            scoreNegativeCountMultiplier = 0 # if the word was inverted with ["No", Not, "Never"] or other such words
-            #check if there is polarity Change Word before the                                      
+        for singleWord in definitionLemmatizedWordTokenSet:                                               
             if singleWord in positiveAssociationWords:
                 polarityScore+= 1*polarityMultiplier
             elif singleWord in negativeAssociationWords:
-                polarityScore -=1*polarityMultiplier            
-            #if the polarity score is -ve for this lemma , but the total score so far is +ve, then the review is conflicted
-            if (polarityScore >0 and totalPolarityScore <0) or (polarityScore <0 and totalPolarityScore >0):
-                conflicted = True            
-            polarityScore = polarityScore/polarityScore # so it will be +/- 1 
-            totalPolarityScore += polarityScore
-                
-                
-        ret_polarity = "neutral"
-        if totalPolarityScore > 0:
-            ret_polarity = "positive"
-        elif totalPolarityScore < 0:
-            ret_polarity = "negative"
+                polarityScore -=1*polarityMultiplier           
+        #END FOR loop through the definition words of the lemma                   
+        if polarityScore != 0:      
+            lemmaPolarityScore = polarityScore/abs(polarityScore) # so it will be +/- 1             
+        #if the polarity score is -ve for this lemma , but the total score so far is +ve, then the review is conflict
+        if (lemmaPolarityScore >0 and totalPolarityScore <0) or (lemmaPolarityScore <0 and totalPolarityScore >0):
+            conflict = True            
+        totalPolarityScore += lemmaPolarityScore
+    #END for loop through the lemmas passed into function
         
-        return (ret_polarity,conflicted, polarityScore) 
+                
+    ret_polarity = "neutral"
+    if totalPolarityScore > 0:
+        ret_polarity = "positive"
+    elif totalPolarityScore < 0:
+        ret_polarity = "negative"
+    
+    if conflict:
+        ret_polarity = "conflict"
+    
+    return (ret_polarity,conflict, totalPolarityScore) 
                 
                 
 
@@ -268,7 +273,9 @@ def getDictionaryPolarity(lemmaSet, lemmatizer, singleReview, positiveAssociatio
 #===============================================================================
 # 
 #===============================================================================
-def unsupervisedWordNetPolarity_updateDictWithAspectPolarityPairs(allRestaurantData, hasEnglishDict  = False):
+def unsupervisedWordNetPolarity_updateDictWithAspectPolarityPairs(allInputData, 
+                        positiveAssociationWords = None, negativeAssociationWords = None, neutralWords = None,
+                        useDictionary = True):
     '''
     @summary: Now load the reviews with deps parsing, and ASSUME the aspect is known. 
 
@@ -301,24 +308,21 @@ dictionary search: Get the definition, do dependency parsing.
     @todo: aspect terms can be compound words. check ifa compound word, in that case combine the qualifiers
     POS can be 4 words before but drop if NN or comma
     '''
-    
-    positiveAssociationWords = ["delight","elation","excitement","happiness","joy","pleasure","love","affection",
-                                                "satisfaction","contentment","relaxation","relief","calmness","politeness",
-                                                "happy",
-                                                "good", "great", "fine", "acceptable"]
-    negativeAssociationWords = ["sadness", "disappointment", "anger", "annoyance", "contempt", "irritation",
-                            "anxiety", "embarrassment", "fear" , "helplessness", "powerlessness", "worry",
-                            "frustration", "shame" ,"boredom", "despair", "hurt", "stress", "shock", "tension"]
-    neutralWords = [ "normal", "neutral", "ok", "o.k.", "okay", ]
     polarityChangeWords = ['not', 'never', 'over', 'excess']
-    
     lemmatizer = nltk.stem.WordNetLemmatizer()
-    englishDictionary  = None
-    if hasEnglishDict == True:
-        englishDictionary = PyDictionary() #optional can be turned off    
-        
-    positiveAssociationWords = [lemmatizer.lemmatize(x) for x in positiveAssociationWords]
-    negativeAssociationWords = [lemmatizer.lemmatize(x) for x in negativeAssociationWords]
+    if positiveAssociationWords == None:
+        positiveAssociationWords = ["delight","elation","excite","happiness","joy","pleasure","love","affection",
+                                                    "satisfaction","contentment","relaxation","relief","calmness","politeness",
+                                                    "happy",
+                                                    "good", "great", "excellent","amazing","wonderful","fine", "acceptable"]
+        negativeAssociationWords = ["sadness", "disappointment", "anger", "annoyance", "contempt", "irritation",
+                                "anxiety", "embarrassment", "fear" , "helplessness", "powerlessness", "worry",
+                                "frustration", "shame" ,"boredom", "despair", "hurt", "stress", "shock", "tension", "fear",
+                                "irritation" ,"disgust"]
+        neutralWords = [ "normal", "neutral", "ok", "o.k.", "okay", ]
+
+    positiveAssociationWords = [lemmatizer.lemmatize(x,pos='a') for x in positiveAssociationWords]
+    negativeAssociationWords = [lemmatizer.lemmatize(x,pos='a') for x in negativeAssociationWords]
     neutralWords = [lemmatizer.lemmatize(x) for x in neutralWords]  
     
 # REMOVE ME    
@@ -329,48 +333,414 @@ dictionary search: Get the definition, do dependency parsing.
     
     #each review is a dict that contains the raw data, POS tags, DEPS (dependency parser) tags, and the 
     # actual aspects, polarity, and category for each review
-    for singleReview in allRestaurantData['sentences']['sentence']:
+    for singleReview in allInputData['sentences']['sentence']:
         #first get the aspects in the sentence        
         try:
             aspectTerms = singleReview['aspectTerms']['aspectTerm']
         except:
             continue #no aspect terms
+        
         if type(aspectTerms) == dict:
             # if there were more than one aspect term, it would be in a list
             #this just makes the single term case (which would be a dict ) into a list of one
             # so the code is common
-            aspectTerms = [aspectTerms]            
+            aspectTerms = [aspectTerms]
+        singleReview['dictAspectPolarity'] = {} #prepare to store the results            
         for singleAspectTermDict in aspectTerms:
             aspectWord = singleAspectTermDict['@term']  
             truePolarity = singleAspectTermDict['@polarity']            
             depsLemmaList = getDependencyTaggingWordLemmas(aspectWord,singleReview,lemmatizer)
             posLemmaList = getPosTaggingWordLemmas(aspectWord,singleReview,lemmatizer) 
-            print("============================================================")  
-            print("SENTENCE =", singleReview['text'], "\nAspect Word =", aspectWord, " Aspect Polarity =", truePolarity)
-            print("DEPS lemmas =", depsLemmaList )
-            print("POS lemmas =", posLemmaList )
-       
-            # WHY does this test case fail for "atmosphere" The design and atmosphere is just as good.  Atmosphere failed ??
-    
        
             lemmaSet = set(depsLemmaList + posLemmaList)            
-            (aspectPolarity ,isConflicted, polarityScore)= getDictionaryPolarity(lemmaSet,lemmatizer,
-                                                   singleReview,positiveAssociationWords,negativeAssociationWords,neutralWords,
-                                                   englishDictionary)
-            print (aspectPolarity ,isConflicted, polarityScore)
-             
-             
-
-                
-                            
-                            
-                                
-                                     
-                        
-
-  
-                             
-             
+            (aspectPolarity ,isconflict, polarityScore)= getWordPolarity(lemmaSet,lemmatizer,
+                                                   singleReview,positiveAssociationWords,negativeAssociationWords,
+                                                   neutralWords, useDictionary)                   
+            singleReview['dictAspectPolarity'][aspectWord] = aspectPolarity
+            
+#             print("============================================================")  
+#             print("SENTENCE =", singleReview['text'], "\nAspect Word =", aspectWord, " Aspect Polarity =", truePolarity)
+#             print("DEPS lemmas =", depsLemmaList )
+#             print("POS lemmas =", posLemmaList )
+#             print("dictionary polarity = " , aspectPolarity)
+    #END FOR loop through reviews
+    
+    for singleReview in allInputData['sentences']['sentence']:
+    #first get the aspects in the sentence        
+        try:
+            aspectTerms = singleReview['aspectTerms']['aspectTerm']
+        except:
+            continue #no aspect terms
         
+        if type(aspectTerms) == dict:
+            # if there were more than one aspect term, it would be in a list
+            #this just makes the single term case (which would be a dict ) into a list of one
+            # so the code is common
+            aspectTerms = [aspectTerms]
+        print("============================================================")  
+        print("SENTENCE =", singleReview['text'])
+        print("Aspects = ", singleReview['aspectTerms'])
+        print("dictionary polarity = " , singleReview['dictAspectPolarity'])
         
+        #output the accuracy. Since it is not a single group we are trying to detect. Precision and recall dont make
+        # sense. But we can output the % of positive terms caught, % of negative, neutral and conflict
+        totalPositiveTerms = 0
+        totalNegativeTerms = 0
+        totalNeutralTerms = 0
+        totalconflictTerms = 0
+        correctPositiveTerms = 0
+        correctNegativeTerms = 0
+        correctNeutralTerms = 0
+        correctconflictTerms = 0        
+        for singleReview in allInputData['sentences']['sentence']:
+            #first get the aspects in the sentence        
+            try:
+                aspectTermsList = singleReview['aspectTerms']['aspectTerm']
+            except:
+                continue #no aspect terms
+            
+            if type(aspectTermsList) == dict:
+                # if there were more than one aspect term, it would be in a list
+                #this just makes the single term case (which would be a dict ) into a list of one
+                # so the code is common
+                aspectTermsList = [aspectTermsList]
+            aspectTermsDictPolarity = singleReview['dictAspectPolarity']
+            for singleAspectDict in aspectTermsList:
+                aspectWord = singleAspectDict['@term']  
+                truePolarity = singleAspectDict['@polarity']
+                if truePolarity == "positive":
+                    totalPositiveTerms+=1
+                elif truePolarity == "negative":
+                    totalNegativeTerms+=1
+                elif truePolarity == "neutral":
+                    totalNeutralTerms+=1
+                elif truePolarity == "conflict":
+                    totalconflictTerms+=1                                        
+                try:
+                    dictPolarity = aspectTermsDictPolarity[aspectWord]
+                    if dictPolarity == truePolarity:
+                        if truePolarity == "positive":
+                            correctPositiveTerms+=1
+                        elif truePolarity == "negative":
+                            correctNegativeTerms+=1
+                        elif truePolarity == "neutral":
+                            correctNeutralTerms+=1
+                        elif truePolarity == "conflict":
+                            correctconflictTerms+=1                             
+                except:
+                    pass#this was a failed case, ignore
+        #end for loop through all the reviews
+        
+    if totalPositiveTerms != 0:
+        print("Positive cases" , totalPositiveTerms, correctPositiveTerms, 
+                                                correctPositiveTerms/totalPositiveTerms)
+    if totalNegativeTerms != 0:
+        print("Negative cases", totalNegativeTerms, correctNegativeTerms,
+                                                correctNegativeTerms/totalNegativeTerms)
+    if totalNeutralTerms != 0:
+        print("Neutral cases" , totalNeutralTerms, correctNeutralTerms,
+                                                    correctNeutralTerms/totalNeutralTerms)
+    if totalconflictTerms != 0:
+        print("Conflict cases", totalconflictTerms, correctconflictTerms,
+                                                    correctconflictTerms/totalconflictTerms)
+        
+    print ("total success", (correctPositiveTerms+correctNegativeTerms+correctNeutralTerms+correctconflictTerms)/
+                                            (totalconflictTerms+totalNegativeTerms+totalNeutralTerms+totalPositiveTerms) )
+              
+#==========================================================
+# 
+#==========================================================
+def supervisedWordNetPolarity_updateDictWithAspectPolarityPairs(trainData, testData):    
+    '''
+    '''        
+    positiveWordAssocList = []
+    negativeWordAssocList = []
+    neutralWordAssocList = []
+    #If an aspect has a polarity and NOT conflict
+    #do the same lemma detection, and save it as positive or negative or neutral.
+    #then run the test data with the updated pos, negative, neutral words as unsupervised learning
+    
+    #each review is a dict that contains the raw data, POS tags, DEPS (dependency parser) tags, and the 
+    # actual aspects, polarity, and category for each review
+    lemmatizer = nltk.stem.WordNetLemmatizer()
+    for singleReview in trainData['sentences']['sentence']:
+        #first get the aspects in the sentence        
+        try:
+            aspectTerms = singleReview['aspectTerms']['aspectTerm']
+        except:
+            continue #no aspect terms        
+        if type(aspectTerms) == dict:
+            # if there were more than one aspect term, it would be in a list
+            #this just makes the single term case (which would be a dict ) into a list of one
+            # so the code is common
+            aspectTerms = [aspectTerms]                
+        for singleAspectTermDict in aspectTerms:
+            aspectWord = singleAspectTermDict['@term']  
+            truePolarity = singleAspectTermDict['@polarity']            
+            depsLemmaList = getDependencyTaggingWordLemmas(aspectWord,singleReview,lemmatizer)
+            posLemmaList = getPosTaggingWordLemmas(aspectWord,singleReview,lemmatizer)                       
+            lemmaSet = set(depsLemmaList + posLemmaList)    
+            #we know the polarity, store it in the right list (except for conflicts)
+            storageList = []            
+            if truePolarity == "positive":
+                storageList = positiveWordAssocList
+            elif truePolarity == "negative":
+                storageList = negativeWordAssocList
+            elif truePolarity == "neutral":
+                storageList = neutralWordAssocList
+            for singleWord in lemmaSet:
+                storageList.append(singleWord)
+        #END FOR LOOP through a single review
+    #END FOR loop through all reviews
+    #At this point we have the word association lists from the training data, now test it on the test data
+    unsupervisedWordNetPolarity_updateDictWithAspectPolarityPairs(testData, list(set(positiveWordAssocList)),
+                                                                  list(set(negativeWordAssocList)), list(set(neutralWordAssocList)),
+                                                                  useDictionary = False) 
+        
+    print("done with supervised word polarity detection")
+                    
+#===========================================================
+# 
+#===========================================================
 
+def unsupervisedDetectConflictSentences(allDataDict, conflictDetectionWords = None):
+    '''
+        This uses a list of frequent conflict indicator words like [ ' but' , 'however', 'still', 'nonetheless']
+    '''
+    
+    if conflictDetectionWords == None:
+        conflictDetectionWords = [ 'but' , ' but' , ',but' , 'however', ' however', ',however', 'still', ' still', ',still', 
+                                  'nonetheless',' nonetheless' , ',nonetheless', 'nevertheless', ' nevertheless', ',nevertheless', 
+                                  'though' ,' though' ,',though' , 'although' , ' although' , ',although']
+
+    for singleReview in allDataDict['sentences']['sentence']:
+    #first get the aspects in the sentence        
+        try:
+            aspectTerms = singleReview['aspectTerms']['aspectTerm']
+        except:
+            continue #no aspect terms
+        
+        if type(aspectTerms) == dict:
+            # if there were more than one aspect term, it would be in a list
+            #this just makes the single term case (which would be a dict ) into a list of one
+            # so the code is common
+            aspectTerms = [aspectTerms]
+        singleReview['dictAspectPolarity'] = {} #prepare to store the results            
+        for singleAspectTermDict in aspectTerms:
+            aspectWord = singleAspectTermDict['@term']  
+            truePolarity = singleAspectTermDict['@polarity']
+            allLemmas = []            
+            allLemmaSentences = singleReview['DEPStagging']
+            
+
+            
+            for singleSentence in allLemmaSentences:
+                allLemmas = allLemmas + [x['word'] for x in singleSentence[1:]]
+       
+            aspectPolarity = "neutral"
+            
+            if truePolarity == "conflict":
+                lemmaSet = set(allLemmas)            
+                for singleLemma in lemmaSet:
+                    if singleLemma in conflictDetectionWords:
+                        aspectPolarity = "conflict"
+                                        
+            singleReview['dictAspectPolarity'][aspectWord] = aspectPolarity
+            
+            print("============================================================")  
+            print("SENTENCE =", singleReview['text'], "\nAspect Word =", aspectWord, " Aspect Polarity =", truePolarity)
+            print("dictionary polarity = " , aspectPolarity)
+    #END FOR loop through reviews
+    
+    for singleReview in allDataDict['sentences']['sentence']: 
+    #first get the aspects in the sentence        
+        try:
+            aspectTerms = singleReview['aspectTerms']['aspectTerm']
+        except:
+            continue #no aspect terms
+        
+        if type(aspectTerms) == dict:
+            # if there were more than one aspect term, it would be in a list
+            #this just makes the single term case (which would be a dict ) into a list of one
+            # so the code is common
+            aspectTerms = [aspectTerms]
+        print("============================================================")  
+        print("SENTENCE =", singleReview['text'])
+        print("Aspects = ", singleReview['aspectTerms'])
+        print("dictionary polarity = " , singleReview['dictAspectPolarity'])
+        
+    #output the accuracy. Since it is not a single group we are trying to detect. Precision and recall dont make
+    # sense. But we can output the % of positive terms caught, % of negative, neutral and conflict    
+    totalNeutralTerms = 0
+    totalconflictTerms = 0
+    correctNeutralTerms = 0
+    correctconflictTerms = 0        
+    for singleReview in allDataDict['sentences']['sentence']:
+        #first get the aspects in the sentence        
+        try:
+            aspectTermsList = singleReview['aspectTerms']['aspectTerm']
+        except:
+            continue #no aspect terms
+        
+        if type(aspectTermsList) == dict:
+            # if there were more than one aspect term, it would be in a list
+            #this just makes the single term case (which would be a dict ) into a list of one
+            # so the code is common
+            aspectTermsList = [aspectTermsList]
+        aspectTermsDictPolarity = singleReview['dictAspectPolarity']
+        for singleAspectDict in aspectTermsList:
+            aspectWord = singleAspectDict['@term']  
+            truePolarity = singleAspectDict['@polarity']
+            if truePolarity == "neutral":
+                totalNeutralTerms+=1
+            elif truePolarity == "conflict":
+                totalconflictTerms+=1                                        
+            try:
+                dictPolarity = aspectTermsDictPolarity[aspectWord]
+                if dictPolarity == truePolarity:
+                    if truePolarity == "neutral":
+                        correctNeutralTerms+=1
+                    elif truePolarity == "conflict":
+                        correctconflictTerms+=1                             
+            except:
+                pass#this was a failed case, ignore
+    #end for loop through all the reviews
+    
+
+    if totalNeutralTerms != 0:
+        print("Neutral cases" , totalNeutralTerms, correctNeutralTerms,
+                                                    correctNeutralTerms/totalNeutralTerms)
+    if totalconflictTerms != 0:
+        print("Conflict cases", totalconflictTerms, correctconflictTerms,
+                                                    correctconflictTerms/totalconflictTerms)
+        
+    print ("total success", (correctNeutralTerms+correctconflictTerms)/
+                                            (totalNeutralTerms+totalconflictTerms) )
+        
+#===============================================================================
+# 
+#===============================================================================
+
+def supervisedDetectConflictSentences( trainData, testData):
+    '''
+    '''
+
+#     if conflictDetectionWords == None:
+#         conflictDetectionWords = [ ' but' , 'however', 'still', 'nonetheless', ' nevertheless']
+# 
+#         for singleReview in allDataDict['sentences']['sentence']:
+#         #first get the aspects in the sentence        
+#         try:
+#             aspectTerms = singleReview['aspectTerms']['aspectTerm']
+#         except:
+#             continue #no aspect terms
+#         
+#         if type(aspectTerms) == dict:
+#             # if there were more than one aspect term, it would be in a list
+#             #this just makes the single term case (which would be a dict ) into a list of one
+#             # so the code is common
+#             aspectTerms = [aspectTerms]
+#         singleReview['dictAspectPolarity'] = {} #prepare to store the results            
+#         for singleAspectTermDict in aspectTerms:
+#             aspectWord = singleAspectTermDict['@term']  
+#             truePolarity = singleAspectTermDict['@polarity']
+#             allLemmas = []            
+#             allLemmaSentences = singleReview['DEPStagging']
+#             for singleSentence in allLemmaSentences:
+#                 allLemmas = allLemmas + [x['word'] for x in singleSentence[1:]]
+#        
+#             lemmaSet = set(allLemmas)            
+#             (aspectPolarity ,isconflict, polarityScore)= getWordPolarity(lemmaSet,lemmatizer,
+#                                                    singleReview,positiveAssociationWords,negativeAssociationWords,
+#                                                    neutralWords, useDictionary)                   
+#             singleReview['dictAspectPolarity'][aspectWord] = aspectPolarity
+#             
+#             print("============================================================")  
+#             print("SENTENCE =", singleReview['text'], "\nAspect Word =", aspectWord, " Aspect Polarity =", truePolarity)
+#             print("DEPS lemmas =", depsLemmaList )
+#             print("POS lemmas =", posLemmaList )
+#             print("dictionary polarity = " , aspectPolarity)
+#     #END FOR loop through reviews
+#     
+#     for singleReview in allInputData['sentences']['sentence']:
+#     #first get the aspects in the sentence        
+#         try:
+#             aspectTerms = singleReview['aspectTerms']['aspectTerm']
+#         except:
+#             continue #no aspect terms
+#         
+#         if type(aspectTerms) == dict:
+#             # if there were more than one aspect term, it would be in a list
+#             #this just makes the single term case (which would be a dict ) into a list of one
+#             # so the code is common
+#             aspectTerms = [aspectTerms]
+#         print("============================================================")  
+#         print("SENTENCE =", singleReview['text'])
+#         print("Aspects = ", singleReview['aspectTerms'])
+#         print("dictionary polarity = " , singleReview['dictAspectPolarity'])
+#         
+#         #output the accuracy. Since it is not a single group we are trying to detect. Precision and recall dont make
+#         # sense. But we can output the % of positive terms caught, % of negative, neutral and conflict
+#         totalPositiveTerms = 0
+#         totalNegativeTerms = 0
+#         totalNeutralTerms = 0
+#         totalconflictTerms = 0
+#         correctPositiveTerms = 0
+#         correctNegativeTerms = 0
+#         correctNeutralTerms = 0
+#         correctconflictTerms = 0        
+#         for singleReview in allInputData['sentences']['sentence']:
+#             #first get the aspects in the sentence        
+#             try:
+#                 aspectTermsList = singleReview['aspectTerms']['aspectTerm']
+#             except:
+#                 continue #no aspect terms
+#             
+#             if type(aspectTermsList) == dict:
+#                 # if there were more than one aspect term, it would be in a list
+#                 #this just makes the single term case (which would be a dict ) into a list of one
+#                 # so the code is common
+#                 aspectTermsList = [aspectTermsList]
+#             aspectTermsDictPolarity = singleReview['dictAspectPolarity']
+#             for singleAspectDict in aspectTermsList:
+#                 aspectWord = singleAspectDict['@term']  
+#                 truePolarity = singleAspectDict['@polarity']
+#                 if truePolarity == "positive":
+#                     totalPositiveTerms+=1
+#                 elif truePolarity == "negative":
+#                     totalNegativeTerms+=1
+#                 elif truePolarity == "neutral":
+#                     totalNeutralTerms+=1
+#                 elif truePolarity == "conflict":
+#                     totalconflictTerms+=1                                        
+#                 try:
+#                     dictPolarity = aspectTermsDictPolarity[aspectWord]
+#                     if dictPolarity == truePolarity:
+#                         if truePolarity == "positive":
+#                             correctPositiveTerms+=1
+#                         elif truePolarity == "negative":
+#                             correctNegativeTerms+=1
+#                         elif truePolarity == "neutral":
+#                             correctNeutralTerms+=1
+#                         elif truePolarity == "conflict":
+#                             correctconflictTerms+=1                             
+#                 except:
+#                     pass#this was a failed case, ignore
+#         #end for loop through all the reviews
+#         
+#         if totalPositiveTerms != 0:
+#             print("Positive cases" , totalPositiveTerms, correctPositiveTerms, 
+#                                                     correctPositiveTerms/totalPositiveTerms)
+#         if totalNegativeTerms != 0:
+#             print("Negative cases", totalNegativeTerms, correctNegativeTerms,
+#                                                     correctNegativeTerms/totalNegativeTerms)
+#         if totalNeutralTerms != 0:
+#             print("Neutral cases" , totalNeutralTerms, correctNeutralTerms,
+#                                                         correctNeutralTerms/totalNeutralTerms)
+#         if totalconflictTerms != 0:
+#             print("Conflict cases", totalconflictTerms, correctconflictTerms,
+#                                                         correctconflictTerms/totalconflictTerms)
+#             
+#         print ("total success", (correctPositiveTerms+correctNegativeTerms+correctNeutralTerms+correctconflictTerms)/
+#                                                 (totalconflictTerms+totalNegativeTerms+totalNeutralTerms+totalPositiveTerms) )
+#         
