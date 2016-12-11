@@ -152,8 +152,8 @@ def eval_one(sentences, asp2category, verbose):
         FN += _FN
         FP += _FP
         if verbose:
-            print('true aspects: ' + str(true_categories))
-            print('possible aspects: ' + str(poss_categories))
+            print('true category: ' + str(true_categories))
+            print('possible category: ' + str(poss_categories))
             print(sent['text'])
             print('TP: ' + str(_TP))
             print('FN: ' + str(_FN))
@@ -209,7 +209,7 @@ def main():
     categories_count()
     print()
     print("=" * 20 + "Evaluation " + '=' * 20)
-    evaluation()
+    evaluation(verbose=True)
 
 if __name__ == '__main__':
     main()

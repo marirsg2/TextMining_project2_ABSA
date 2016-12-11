@@ -80,9 +80,6 @@ def eval_on_one_set(labeled_data, aspects_dict):
     FN = 0
     FP = 0
     for sent in labeled_data:
-        _TP = 0
-        _FN = 0
-        _FP = 0
         text = sent['text']
         #text = text.lower()
 
