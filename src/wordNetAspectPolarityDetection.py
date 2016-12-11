@@ -14,12 +14,16 @@ import UtilityFunctions as util
 # print(wn.synsets("delighted")[0].definition())
 
 '''
-The choice of words for polarity were decided from the following information and logic
-#https://en.wikipedia.org/wiki/Contrasting_and_categorization_of_emotions
 
-# if any of these words are in the definition, then it affects the polarity. Keep in mind negations ("not happy")
-# the keywords were also filled with common positive, negative words like good and bad (not emotions) but
-# general object qualifiers (adjectives)
+There are 3 main functions to this script
+
+1)unsupervisedWordNetPolarity_updateDictWithAspectPolarityPairs
+2)supervisedWordNetPolarity_updateDictWithAspectPolarityPairs
+3)unsupervisedDetectConflictSentences
+
+a) The choice of seed words for the unsupervised approach was taken from
+the following information and logic
+#https://en.wikipedia.org/wiki/Contrasting_and_categorization_of_emotions
 
 '''
 
@@ -617,130 +621,5 @@ def unsupervisedDetectConflictSentences(allDataDict, conflictDetectionWords = No
     print ("total success", (correctNeutralTerms+correctconflictTerms)/
                                             (totalNeutralTerms+totalconflictTerms) )
         
-#===============================================================================
-# 
-#===============================================================================
 
-def supervisedDetectConflictSentences( trainData, testData):
-    '''
-    '''
 
-#     if conflictDetectionWords == None:
-#         conflictDetectionWords = [ ' but' , 'however', 'still', 'nonetheless', ' nevertheless']
-# 
-#         for singleReview in allDataDict['sentences']['sentence']:
-#         #first get the aspects in the sentence        
-#         try:
-#             aspectTerms = singleReview['aspectTerms']['aspectTerm']
-#         except:
-#             continue #no aspect terms
-#         
-#         if type(aspectTerms) == dict:
-#             # if there were more than one aspect term, it would be in a list
-#             #this just makes the single term case (which would be a dict ) into a list of one
-#             # so the code is common
-#             aspectTerms = [aspectTerms]
-#         singleReview['dictAspectPolarity'] = {} #prepare to store the results            
-#         for singleAspectTermDict in aspectTerms:
-#             aspectWord = singleAspectTermDict['@term']  
-#             truePolarity = singleAspectTermDict['@polarity']
-#             allLemmas = []            
-#             allLemmaSentences = singleReview['DEPStagging']
-#             for singleSentence in allLemmaSentences:
-#                 allLemmas = allLemmas + [x['word'] for x in singleSentence[1:]]
-#        
-#             lemmaSet = set(allLemmas)            
-#             (aspectPolarity ,isconflict, polarityScore)= getWordPolarity(lemmaSet,lemmatizer,
-#                                                    singleReview,positiveAssociationWords,negativeAssociationWords,
-#                                                    neutralWords, useDictionary)                   
-#             singleReview['dictAspectPolarity'][aspectWord] = aspectPolarity
-#             
-#             print("============================================================")  
-#             print("SENTENCE =", singleReview['text'], "\nAspect Word =", aspectWord, " Aspect Polarity =", truePolarity)
-#             print("DEPS lemmas =", depsLemmaList )
-#             print("POS lemmas =", posLemmaList )
-#             print("dictionary polarity = " , aspectPolarity)
-#     #END FOR loop through reviews
-#     
-#     for singleReview in allInputData['sentences']['sentence']:
-#     #first get the aspects in the sentence        
-#         try:
-#             aspectTerms = singleReview['aspectTerms']['aspectTerm']
-#         except:
-#             continue #no aspect terms
-#         
-#         if type(aspectTerms) == dict:
-#             # if there were more than one aspect term, it would be in a list
-#             #this just makes the single term case (which would be a dict ) into a list of one
-#             # so the code is common
-#             aspectTerms = [aspectTerms]
-#         print("============================================================")  
-#         print("SENTENCE =", singleReview['text'])
-#         print("Aspects = ", singleReview['aspectTerms'])
-#         print("dictionary polarity = " , singleReview['dictAspectPolarity'])
-#         
-#         #output the accuracy. Since it is not a single group we are trying to detect. Precision and recall dont make
-#         # sense. But we can output the % of positive terms caught, % of negative, neutral and conflict
-#         totalPositiveTerms = 0
-#         totalNegativeTerms = 0
-#         totalNeutralTerms = 0
-#         totalconflictTerms = 0
-#         correctPositiveTerms = 0
-#         correctNegativeTerms = 0
-#         correctNeutralTerms = 0
-#         correctconflictTerms = 0        
-#         for singleReview in allInputData['sentences']['sentence']:
-#             #first get the aspects in the sentence        
-#             try:
-#                 aspectTermsList = singleReview['aspectTerms']['aspectTerm']
-#             except:
-#                 continue #no aspect terms
-#             
-#             if type(aspectTermsList) == dict:
-#                 # if there were more than one aspect term, it would be in a list
-#                 #this just makes the single term case (which would be a dict ) into a list of one
-#                 # so the code is common
-#                 aspectTermsList = [aspectTermsList]
-#             aspectTermsDictPolarity = singleReview['dictAspectPolarity']
-#             for singleAspectDict in aspectTermsList:
-#                 aspectWord = singleAspectDict['@term']  
-#                 truePolarity = singleAspectDict['@polarity']
-#                 if truePolarity == "positive":
-#                     totalPositiveTerms+=1
-#                 elif truePolarity == "negative":
-#                     totalNegativeTerms+=1
-#                 elif truePolarity == "neutral":
-#                     totalNeutralTerms+=1
-#                 elif truePolarity == "conflict":
-#                     totalconflictTerms+=1                                        
-#                 try:
-#                     dictPolarity = aspectTermsDictPolarity[aspectWord]
-#                     if dictPolarity == truePolarity:
-#                         if truePolarity == "positive":
-#                             correctPositiveTerms+=1
-#                         elif truePolarity == "negative":
-#                             correctNegativeTerms+=1
-#                         elif truePolarity == "neutral":
-#                             correctNeutralTerms+=1
-#                         elif truePolarity == "conflict":
-#                             correctconflictTerms+=1                             
-#                 except:
-#                     pass#this was a failed case, ignore
-#         #end for loop through all the reviews
-#         
-#         if totalPositiveTerms != 0:
-#             print("Positive cases" , totalPositiveTerms, correctPositiveTerms, 
-#                                                     correctPositiveTerms/totalPositiveTerms)
-#         if totalNegativeTerms != 0:
-#             print("Negative cases", totalNegativeTerms, correctNegativeTerms,
-#                                                     correctNegativeTerms/totalNegativeTerms)
-#         if totalNeutralTerms != 0:
-#             print("Neutral cases" , totalNeutralTerms, correctNeutralTerms,
-#                                                         correctNeutralTerms/totalNeutralTerms)
-#         if totalconflictTerms != 0:
-#             print("Conflict cases", totalconflictTerms, correctconflictTerms,
-#                                                         correctconflictTerms/totalconflictTerms)
-#             
-#         print ("total success", (correctPositiveTerms+correctNegativeTerms+correctNeutralTerms+correctconflictTerms)/
-#                                                 (totalconflictTerms+totalNegativeTerms+totalNeutralTerms+totalPositiveTerms) )
-#         
