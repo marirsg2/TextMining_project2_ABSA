@@ -12,6 +12,20 @@ from gensim.models.doc2vec import TaggedDocument
 
 assert gensim.models.doc2vec.FAST_VERSION > -1, "this will be painfully slow otherwise"
 
+'''
+    NOTE: This approach was abandoned as the initial results showed that the similarity between
+    words we expected to have strong relationships, like laptop and battery , was very weak.
+    We also saw relationships between restaurant and hard-drive. The issue is lack of diversity and
+    quantity of data. We also think we could have improved the results by only training on the nouns
+    and adjectives
+    
+    the main function for this script is the last function getListOfAspects()
+'''
+
+
+'''
+'''
+
 
 #code borrowed from 
 # https://github.com/RaRe-Technologies/gensim/blob/develop/docs/notebooks/doc2vec-IMDB.ipynb

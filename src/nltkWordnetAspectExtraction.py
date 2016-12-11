@@ -8,18 +8,19 @@ from nltk.corpus import wordnet as wn
 
 
 '''
+    NOTE: This approach was abandoned as the initial results showed that the wordnet relationships
+    was incomplete and had a lot of holes.
+'''
 
-
-
+'''
     This approach uses the following ideas
     1) The category is given: Restaurant and Laptop
-    2) Assumption : In each review there is atleast one aspect associated with the category
+    2) Assumption : In most reviews there is atleast one aspect associated with the category
              The aspect maybe a noun, or an adjective and we have to infer the noun (eg: Expensive -> price)
     3) This approach is primarily to see if the nouns in the review are related to the category using wordnet
     definitions.
-    4) The adjective mapping needs to be done with another method
     
-    FOR explanations:
+    FOR explanations on the different relationships in wordnet:
     http://trimc-nlp.blogspot.com/2015/06/python-nltk-and-wordnet.html
     
 '''
@@ -51,17 +52,16 @@ Adjectives that are derived from Nouns. eg: Criminal -> Crime
 #===============================================================================
 
 if __name__ == "__main__":
-    a = wn.synsets('food')
+    a = wn.synsets('laptops')
     print(a)
     for piece in a[:1]:
         print ("=================================================")
         print (piece.definition())
         print (piece.hypernyms())
-        print (piece.hyponyms())        
+        print (piece.hyponyms())
+        print (piece.meronyms())             
         print (piece.topic_domains())
         
-    
-    
     '''
     antonyms
 hypernyms, instance_hypernyms
