@@ -46,11 +46,7 @@ def get_depG():
     dep_parser = StanfordDependencyParser(model_path="edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz")
 
     tt = '''
-    I previously purchased a 13" macbook (had pro specs and was aluminum style) which had a
-    nvidia 9800 (If I am not mistaken) and it had major heating issues. The battery doesn't
-    last long but I'm sure an upgrade battery would solve that problem.
-    I charge it at night and skip taking the cord with me because of the good battery life.
-    The fried rice is amazing here.
+    The programs that come standard with the Leopard running system are enough for the average person to run all the basics.
     '''
     tt = tt.strip()
     tt = tt.replace('\n', ' ')
@@ -92,6 +88,40 @@ def get_compound(depG):
     return aspects_list
 
 
+def get_compound2(depG):
+    """
+    Args:
+    depG (list): the input is one dependency Graph
+
+    Returns:
+    aspects(list): contains pairs of compound NN, possible aspects
+
+    """
+
+    aspects_list = []
+    for node in depG:
+        if 'compound' in node['deps']:
+            current_word = node['word']
+            words_list = []
+            for pos in node['deps']['compound']:
+                compound_node = get_node_with_address(pos, depG)
+                compound_word = compound_node['word']
+                words_list.append(compound_word)
+
+            words_list.append(current_word)
+            # if len(node['deps']['compound']) > 2:
+            #     print(node)
+            if node['tag'] == 'NN' or node['tag'] == 'NNS' or node['tag'] == 'NNP' \
+                    or node['tag'] == 'NNPS':
+                aspects_list.append(words_list)
+            else:
+                pass
+                # print(compound_words)
+                # print(node['tag'])
+
+    return aspects_list
+
+
 def get_poss_aspects(all_reviews):
     """
     get all possible compounds contains noun as aspects
@@ -106,12 +136,28 @@ def get_poss_aspects(all_reviews):
     return aspects
 
 
+def get_poss_aspects2(all_reviews):
+    """
+    get all possible compounds contains noun as aspects
+    """
+    aspects = {}
+    for review in all_reviews:
+        depGraphs = review['DEPStagging']
+        for graph in depGraphs:
+            aspects_list = get_compound2(graph)
+            for pair in aspects_list:
+                put_aspect(aspects, pair)
+    return aspects
+
+
 def put_aspect(aspects_dict, aspect):
     """
+    Args:
+        aspect(str)
     """
     aspect_str = ''
     for i in aspect:
-        i = i.lower()
+        # i = i.lower()
         aspect_str += i
         aspect_str += ' '
     aspect_str = aspect_str.strip()
@@ -190,21 +236,30 @@ def get_node_with_address(address, depG):
 
 def test():
 
-    tt = '''
-    I previously purchased a 13" macbook (had pro specs and was aluminum style) which had a
-    nvidia 9800 (If I am not mistaken) and it had major heating issues. The battery doesn't
-    last long but I'm sure an upgrade battery would solve that problem.
-    I charge it at night and skip taking the cord with me because of the good battery life.
-    '''
-    # get_compound_test(tt, dep_parser)
-    # print(get_depG())
-    # print(get_compound(get_depG()))
-    rst_asp, lptp_asp = get_aspects()
-    print('*' * 20)
-    print(rst_asp)
-    print('*' * 20)
-    print(lptp_asp)
+    print(get_compound2(get_depG()))
+    # rst_asp, lptp_asp = get_aspects()
+    # print('*' * 20)
+    # print(rst_asp)
+    # print('*' * 20)
+    # print(lptp_asp)
+    # print(len(lptp_asp))
 
+    # rst_train, lptp_train = load_train_sentences()
+    # rst_aspects1 = get_poss_aspects(rst_train)
+    # lptp_aspects1 = get_poss_aspects(lptp_train)
+    # rst_aspects2 = get_poss_aspects2(rst_train)
+    # lptp_aspects2 = get_poss_aspects2(lptp_train)
+    #
+    # rst_count = 0
+    # for key in rst_aspects1:
+    #     if key not in rst_aspects2:
+    #         rst_count += 1
+    # lptp_count = 0
+    # for key in lptp_aspects1:
+    #     if key not in lptp_aspects2:
+    #         lptp_count += 1
+    # print(rst_count)
+    # print(lptp_count)
 
 if __name__ == "__main__":
     test()

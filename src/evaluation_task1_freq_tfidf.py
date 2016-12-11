@@ -84,6 +84,7 @@ def eval_on_one_set(labeled_data, aspects_dict):
         _FN = 0
         _FP = 0
         text = sent['text']
+        #text = text.lower()
 
         true_aspects = get_aspects(sent)
         poss_aspects = []
@@ -107,13 +108,13 @@ def eval_on_one_set(labeled_data, aspects_dict):
         TP += _TP
         FN += _FN
         FP += _FP
-        print('true aspects: ' + str(true_aspects))
-        print('possible aspects: ' + str(poss_aspects))
-        print(text)
-        print('TP: ' + str(_TP))
-        print('FN: ' + str(_FN))
-        print('FP: ' + str(_FP))
-        print('*' * 20)
+        # print('true aspects: ' + str(true_aspects))
+        # print('possible aspects: ' + str(poss_aspects))
+        # print(text)
+        # print('TP: ' + str(_TP))
+        # print('FN: ' + str(_FN))
+        # print('FP: ' + str(_FP))
+        # print('*' * 20)
 
     precision = float(TP) / (TP+FP)
     recall = float(TP) / (TP + FN)
@@ -142,4 +143,4 @@ def get_aspects(sent):
     return ret
 
 if __name__ == "__main__":
-    evaluate2()
+    evaluate()
