@@ -74,7 +74,8 @@ def getDependencyTaggingWordLemmas(aspectWord,singleReview,lemmatizer):
             #CHECK if the node matches our adjective mod address
             if singleNode['address'] in amodAddresses: #If amod was -1, then we wont find one
                 if singleNode['tag'] not in ["JJ", "JJR", "JJS"]:
-                    print("Error , incorrect DEPS tree connection with amod")
+                    #print("Error , incorrect DEPS tree connection with amod")
+                    pass #this can happen if the DEPS parsing is bad
                 else:
                     qualifyingWordTuples.append( (sentenceIndex, singleNode['word'],singleNode['tag'],singleNode['address']) )
             #end if the address was the adj modifier address
@@ -381,10 +382,12 @@ dictionary search: Get the definition, do dependency parsing.
             #this just makes the single term case (which would be a dict ) into a list of one
             # so the code is common
             aspectTerms = [aspectTerms]
-        print("============================================================")  
-        print("SENTENCE =", singleReview['text'])
-        print("Aspects = ", singleReview['aspectTerms'])
-        print("dictionary polarity = " , singleReview['dictAspectPolarity'])
+            
+            #printout for DEBUGGING
+#         print("============================================================")  
+#         print("SENTENCE =", singleReview['text'])
+#         print("Aspects = ", singleReview['aspectTerms'])
+#         print("dictionary polarity = " , singleReview['dictAspectPolarity'])
         
         #output the accuracy. Since it is not a single group we are trying to detect. Precision and recall dont make
         # sense. But we can output the % of positive terms caught, % of negative, neutral and conflict
