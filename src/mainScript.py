@@ -92,4 +92,4 @@ print("=========Results for task 2 in RESTAURANT category   for CONFLICT detecti
 wordNetAspectPolarityDetection.unsupervisedDetectConflictSentences(allRestaurantData)
 print("=============x-------------------END RESULTS FOR UNSUPERVISED TASK 2--------------x===============================")
 
-
+#----------------------- SUPERVISED approach to task 2
