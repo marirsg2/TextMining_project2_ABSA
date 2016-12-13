@@ -209,9 +209,12 @@ def getWordPolarity(lemmaSet, lemmatizer, singleReview, positiveAssociationWords
     @summary: 
         1) For each qualifier word determine the polarity by looking at it's definition. If the definition does not exist, ignore
         2) if it exists, get all the words and lemmatize them. Score the number of pos, neg, and neutral words
-            if preceeded by not, no, never, then score oppposite. Polarity is +/-, neutral score is seperate.
-            If there is a "but", "however", then the word is conflict, simply set neutral to a negative (-1)        
+            if preceeded by not, no, never, then score oppposite. Polarity is +/-, 
+        3) Even though we try to handle conflicts here, there is a seperate function to detect conflicted reviews
+        which is more accurate. 
+        @see: unsupervisedDetectConflictSentences()                 
     '''
+    
     totalPolarityScore = 0
     conflict = False
     for singleLemma  in lemmaSet:
@@ -245,8 +248,7 @@ def getWordPolarity(lemmaSet, lemmatizer, singleReview, positiveAssociationWords
     if totalPolarityScore > 0:
         ret_polarity = "positive"
     elif totalPolarityScore < 0:
-        ret_polarity = "negative"
-    
+        ret_polarity = "negative"    
     if conflict:
         ret_polarity = "conflict"
     
@@ -260,36 +262,24 @@ def unsupervisedWordNetPolarity_updateDictWithAspectPolarityPairs(allInputData,
                         positiveAssociationWords = None, negativeAssociationWords = None, neutralWords = None,
                         useDictionary = True):
     '''
-    @summary: Now load the reviews with deps parsing, and ASSUME the aspect is known. 
+    @summary: Now load the reviews with deps parsing, and ASSUME the aspect is known (input from the reviews). 
 
-Find the adjective
-qualifying the aspect. Then apply the dictionary search. Can also be an adverb , if the aspect is the noun subject eg: food is great.
+Find the adjective qualifying the aspect. Then apply the dictionary search. 
 
 NOTE: if no amod or nsubj connection, find the nearest JJ that has the "head" as the aspect and not connected to anything else
-IMPORTANT: Can be "little perks were great" little is amod, so is great. Read through and id all JJ with nsubj as aspect.
-
 NOTE: if the aspect is not literally there in the sentence, then this approach cannot work
-
-NOTE: if the adj is not linked in DEPS tags, then look for the adjectives around the aspect word,
-IMPORTANT: look for negation words with 2 words before it 
+IMPORTANT: look for negation words with 2 words before it to change the polarity
 
 dictionary search: Get the definition, do dependency parsing.
-        Then for each adjective, 
+        Then for the words in it 
             a) see if it is negated. 
-            b) get the lemma form and see if it is in the assoc list
-            c) if the words in the association list appear directly in the definition.
-                    also be careful of negations "without pleasure" , "no satisfaction" ,"not good"
-                    I think those are all the words
+            b) get the lemma form and see if it is in the assoc list (positive, negative, neutral)
+            c) if the words in the association list appear directly in the definition, then +/- 1 to the polarity score
+                See the function called to find polarity
             d) If we could not find adjectives for the aspect, then it is neutral
-            e) Anecdotes are really hard with this method, need a lot of semantic understanding and context knowledge
-        ? how to handle "I got no satisfaction from the food".
-                what tag is satisfaction. Find a similar case from the review data.
-                
-        "I had the salmon dish and while it was fine, for the price paid, I expected it to have some type of flavor"
-        "Decor is nice and minimalist, food simple yet very well presented and cooked, and the wine list matches the food very well"
-                
-    @todo: aspect terms can be compound words. check ifa compound word, in that case combine the qualifiers
-    POS can be 4 words before but drop if NN or comma
+NOTE: Anecdotes are really hard with this method, need a lot of semantic understanding and context knowledge
+                                
+    @todo: improve algorithm by considering compound words and definitions
     '''
     polarityChangeWords = ['not', 'never', 'over', 'excess']
     lemmatizer = nltk.stem.WordNetLemmatizer()
@@ -417,6 +407,7 @@ dictionary search: Get the definition, do dependency parsing.
 #==========================================================
 def supervisedWordNetPolarity_updateDictWithAspectPolarityPairs(trainData, testData):    
     '''
+    @summary: same as the unsupervised approach, but the polarity words are taken from the training data
     '''        
     positiveWordAssocList = []
     negativeWordAssocList = []
@@ -467,10 +458,10 @@ def supervisedWordNetPolarity_updateDictWithAspectPolarityPairs(trainData, testD
 #===========================================================
 # 
 #===========================================================
-
 def unsupervisedDetectConflictSentences(allDataDict, conflictDetectionWords = None):
     '''
-        This uses a list of frequent conflict indicator words like [ ' but' , 'however', 'still', 'nonetheless']
+       @summary: Detects conflict by looking for words from a list of frequent conflict indicator words 
+       like [ ' but' , 'however', 'still', 'nonetheless']
     '''    
     if conflictDetectionWords == None:
         conflictDetectionWords = [ 'but' , ' but' , ',but' , 'however', ' however', ',however', 'still', ' still', ',still', 
@@ -557,14 +548,6 @@ def unsupervisedDetectConflictSentences(allDataDict, conflictDetectionWords = No
         print("Conflict cases", totalconflictTerms, correctconflictTerms,
                                                     correctconflictTerms/totalconflictTerms)
     
-# Does NOT make sense to measure success in neutral cases, as default was neutral (here neutral is not conflict)
-#     if totalNeutralTerms != 0:
-#         print("Neutral cases" , totalNeutralTerms, correctNeutralTerms,
-#                                                     correctNeutralTerms/totalNeutralTerms)
-
-#Again, total success does not make sense as neutral terms are the default, and the majority of cases        
-#     print ("total success", (correctNeutralTerms+correctconflictTerms)/
-#                                             (totalNeutralTerms+totalconflictTerms) )
         
 
 
