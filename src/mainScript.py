@@ -120,4 +120,5 @@ trained_list_restaurant = supervised_restaurantTrain.get_aspect_polarity()
 
 test_restaurantTrain.getAccuracy(trained_list_restaurant, restaurantTestDict)
 
+print(" Please run the task3.py script for Task 3 results")
 
