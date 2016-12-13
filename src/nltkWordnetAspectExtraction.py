@@ -17,8 +17,8 @@ from nltk.corpus import wordnet as wn
     1) The category is given: Restaurant and Laptop
     2) Assumption : In most reviews there is atleast one aspect associated with the category
              The aspect maybe a noun, or an adjective and we have to infer the noun (eg: Expensive -> price)
-    3) This approach is primarily to see if the nouns in the review are related to the category using wordnet
-    definitions.
+    3) This approach is primarily to see if the nouns in the review are related to the category. The relationships are
+    found using wordnet definitions.
     
     FOR explanations on the different relationships in wordnet:
     http://trimc-nlp.blogspot.com/2015/06/python-nltk-and-wordnet.html
@@ -53,6 +53,9 @@ Adjectives that are derived from Nouns. eg: Criminal -> Crime
 
 if __name__ == "__main__":
     a = wn.synsets('laptops')
+    #most of the relationships are empty lists, and the definition is very sparse, and the relationships of those
+    # worse in the definition were also weak. This was the same for restaurants as well. So we abandoned this
+    # approach
     print(a)
     for piece in a[:1]:
         print ("=================================================")

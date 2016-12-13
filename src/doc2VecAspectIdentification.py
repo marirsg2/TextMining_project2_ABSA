@@ -64,16 +64,17 @@ def getTaggedDocumentsWithDEPSnounsOnly (list_categoryAndReviewsTuple):
     for entry in list_categoryAndReviewsTuple:
         list_filteredDEPSreviews = []
         list_allReviewsInCategoryAsDEPStext= [x['DEPStagging'] for x in entry[1]['sentences']['sentence'] ];
-        for singleDEPStaggedReview in list_allReviewsInCategoryAsDEPStext:            
-            filteredSentence = []            
-            for singleTag in singleDEPStaggedReview:
-                if singleTag['tag'] in ["NN", "NNS"] and singleTag['word'] not in ["laptop","restaurant"]:#, "JJ", "JJS"]:
-                    filteredSentence.append(singleTag['word'])                
-#             filteredSentence.insert(0,entry[0] )
-#             filteredSentence.insert(int(len(filteredSentence)/2),entry[0] )
-            filteredSentence.insert(len(filteredSentence)-1,entry[0] )
-            list_filteredDEPSreviews.append(filteredSentence)            
+        for singleDEPStaggedReview in list_allReviewsInCategoryAsDEPStext:                            
+            for singleSentence in singleDEPStaggedReview:
+                filteredSentence = []        
+                for singleTag in singleSentence:
+                    if singleTag['tag'] in ["NN", "NNS"] and singleTag['word'] not in ["laptop","restaurant"]:#, "JJ", "JJS"]:
+                        filteredSentence.append(singleTag['word'])             
+                #the next line inserts the category in the end of the sentence for training similarity as well   
+                filteredSentence.insert(len(filteredSentence)-1,entry[0] )
+                list_filteredDEPSreviews.append(filteredSentence)            
         for filteredDEPSreview in list_filteredDEPSreviews:
+            #tagged documents are the class of documents used for training doc 2 vec
             ret_list_taggedDocuments.append( TaggedDocument( words = filteredDEPSreview , tags = [ entry[0] ] ) )
     
     return ret_list_taggedDocuments
@@ -106,12 +107,12 @@ def getTaggedDocumentsWithPOSnounsOnly (list_categoryAndReviewsTuple):
 #===============================================================================
 # 
 #===============================================================================
-def getListOfAspects(dictOfReviewsByCategory):
+def getDictionaryOfAspectsByCategory(dictOfReviewsByCategory):
     '''
     
-    @param dictOfReviewsByCategory: This is a list of dicts. the keys are the categories, and the values are the dicts
-    that contain the reviews. Note that the reviews are stored as a dict which contains the raw data, pos tagged data, and the correct
-    aspects for each review 
+    @param dictOfReviewsByCategory: This is a python dictionary (map). the keys are the categories, and the values are the dicts
+    that contain the reviews. Note that the reviews are stored as a dict which contains the raw data, pos tagged data,
+    dependency parsed data and the correct aspects for each review 
     @summary: This function uses doc 2 vec to train vector representations for every word in the review  with the category
     label that the review is associated with. This function also uses two random news articles from unrelated categories
     so that only strongly connected aspects will be similar to the categories that they came from. 
@@ -121,8 +122,6 @@ def getListOfAspects(dictOfReviewsByCategory):
     
     # First train two doc 2 vec categories  
     list_categoryAndReviewsTuple = dictOfReviewsByCategory.items()
-
-#     list_taggedDocuments = getTaggedDocumentsWithNormalizedText(list_categoryAndReviewsTuple)
     list_taggedDocuments = getTaggedDocumentsWithDEPSnounsOnly(list_categoryAndReviewsTuple)
 
     #Now when we train the data we need to randomize it since the learning rate reduces over iterations
@@ -141,4 +140,7 @@ def getListOfAspects(dictOfReviewsByCategory):
     print("For restaurant")
     print (d2vModel.most_similar("restaurant", topn=20))
     print (len(d2vModel.vocab))
+    
+    return ({"laptop": [x[0] for x in d2vModel.most_similar("laptop", topn=20)],
+                  "restaurant": [x[0] for x in d2vModel.most_similar("restaurant", topn=20)]})
     
