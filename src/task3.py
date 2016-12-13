@@ -129,8 +129,8 @@ def evaluation(verbose = True):
 def eval_one(sentences, asp2category, verbose):
     """
     :param sentences: (list)
-    :param asp2category: (dict)
-    :param verbose: (boolean)
+    :param asp2category: (dict) mapping from aspect to category
+    :param verbose: (boolean) enable verbose mode or not
     :return:
     """
     TP = 0
